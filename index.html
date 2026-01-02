@@ -1,213 +1,539 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ตลาดซื้อขายที่ดิน | Land Market</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<style>
-    body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #f1f1f1; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    dialog { transition: all 0.3s allow-discrete; opacity: 0; transform: scale(0.95); }
-    dialog[open] { opacity: 1; transform: scale(1); }
-    dialog::backdrop { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
-    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>สารบบบุคคลสำคัญ – หอจดหมายเหตุ (กรมศิลป์ PDF)</title>
+    
+    <!-- ✅ 1. ใช้ Tailwind CSS และ Google Fonts ตามแบบไฟล์สวยงาม -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ===== Theme Variables & Global Styles ===== */
+        :root {
+            --accent-gold: #d4af37;
+            --accent-gold-dim: rgba(212, 175, 55, 0.15);
+            --bg-dark: #050505;
+            --text-main: #f4e4bc;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif; /* ใช้ Sarabun เป็นหลักสำหรับอ่านไทยง่าย */
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 2px 2px, rgba(212, 175, 55, 0.05) 1px, transparent 0);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* หัวข้อภาษาอังกฤษใช้ Cinzel เพื่อความขลัง */
+        h1, .en-title { font-family: 'Cinzel', serif; }
+
+        /* ===== Card Styles (ยกมาจากไฟล์สวยงาม) ===== */
+        .card-wrapper {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .card-inner {
+            border: 1px solid var(--accent-gold-dim);
+            background: #0a0a0a;
+            overflow: hidden;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+        }
+
+        .card-img {
+            filter: grayscale(100%) contrast(1.1);
+            transition: all 0.5s ease;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+        }
+
+        /* Hover Effects */
+        .card-wrapper:hover .card-inner {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+            transform: translateY(-4px);
+        }
+        .card-wrapper:hover .card-img {
+            filter: grayscale(0%) contrast(1.1);
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        .card-wrapper:hover h3 {
+            color: var(--accent-gold) !important;
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+        }
+
+        /* Animation */
+        @keyframes fadePop {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== UI Elements ===== */
+        .search-glow:focus-within {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+            border-color: var(--accent-gold);
+        }
+
+        .btn-gold {
+            background: linear-gradient(180deg, #d4af37 0%, #8b6c28 100%);
+            color: #000;
+            font-weight: 700;
+            border: 1px solid #f4e4bc;
+            transition: all 0.2s;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+        }
+        .btn-gold:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+        }
+        .btn-gold:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            filter: grayscale(1);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            transition: all 0.2s;
+        }
+        .btn-outline:hover {
+            background: rgba(212, 175, 55, 0.1);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+
+        /* ===== Custom Dialog Styling (Modern Dark) ===== */
+        dialog {
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid var(--accent-gold);
+            border-radius: 8px;
+            color: var(--text-main);
+            max-width: min(800px, 92vw);
+            padding: 0;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8), 0 0 20px rgba(212, 175, 55, 0.2);
+            backdrop-filter: blur(10px);
+            animation: fadePop 0.3s ease-out;
+        }
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+        }
+        
+        /* Hide scrollbar for grid but allow scroll */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #1a1a1a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
+
+        .hide { display: none !important; }
+    </style>
 </head>
-<body class="text-gray-800 min-h-screen flex flex-col">
+<body class="flex flex-col items-center">
 
-<nav class="bg-white shadow-sm sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-      <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.reload()">
-        <div class="bg-blue-600 text-white p-2 rounded-lg"><i class="fa-solid fa-map-location-dot text-xl"></i></div>
-        <span class="font-bold text-xl text-blue-900">Land<span class="text-blue-600">Market</span></span>
-      </div>
-      <div class="hidden md:flex relative"><input id="q_desktop" type="text" placeholder="ค้นหา..." class="pl-10 pr-4 py-2 border rounded-full text-sm focus:ring-1 focus:ring-blue-500 w-64"><i class="fa-solid fa-search absolute left-3.5 top-3 text-gray-400"></i></div>
-  </div>
-</nav>
-<div class="md:hidden bg-white border-b p-3 sticky top-16 z-40"><div class="relative"><input id="q_mobile" type="text" placeholder="ค้นหา..." class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg text-sm"><i class="fa-solid fa-search absolute left-3.5 top-2.5 text-gray-500"></i></div></div>
-
-<main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-    <div class="flex justify-between items-end mb-6">
-        <div><h1 class="text-2xl font-bold text-gray-900">ประกาศขายที่ดิน</h1><p class="text-gray-500 text-sm">แหล่งรวมที่ดินทำเลทองทั่วไทย</p></div>
-        <button onclick="openNewPostModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-md flex items-center gap-2 active:scale-95 transition-all"><i class="fa-solid fa-plus"></i> ลงประกาศ</button>
-    </div>
-    <div id="loading" class="flex flex-col items-center justify-center py-20 text-gray-400"><i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i><p>กำลังโหลดข้อมูล...</p></div>
-    <section id="board" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden"></section>
-</main>
-<footer class="bg-white border-t mt-10 py-6 text-center text-gray-500 text-sm">&copy; 2024 LandMarket Platform</footer>
-
-<dialog id="dlg" class="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-lg backdrop:bg-gray-900/50">
-    <div class="p-6 border-b flex justify-between items-center"><h3 id="dlgTitle" class="text-lg font-bold">ลงประกาศ</h3><button onclick="closeModal()" class="text-gray-400 hover:bg-gray-100 w-8 h-8 rounded-full"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="p-6 space-y-4">
-        <input type="hidden" id="postId">
-        <div><label class="block text-sm font-medium mb-1">หัวข้อประกาศ</label><input id="title" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm font-medium mb-1">ผู้ติดต่อ</label><input id="contact_name" type="text" class="w-full px-4 py-2 border rounded-lg outline-none"></div>
-            <div><label class="block text-sm font-medium mb-1">ทำเล</label><input id="address" type="text" class="w-full px-4 py-2 border rounded-lg outline-none"></div>
+    <!-- Header -->
+    <header class="w-full max-w-[1600px] px-6 py-8 md:py-12 relative z-10 flex flex-col md:flex-row justify-between items-center gap-6 border-b border-[#d4af37]/20">
+        <div class="text-center md:text-left">
+            <h1 class="text-2xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-[#f4e4bc] via-[#d4af37] to-[#8b4513] mb-2 tracking-wide">
+                สารบบบุคคลสำคัญ
+            </h1>
+            <p class="text-[#d4af37] font-serif italic text-xs md:text-sm tracking-widest uppercase opacity-80">
+                ARCHIVE OF HISTORICAL FIGURES · กรมศิลปากร
+            </p>
         </div>
-        <div><label class="block text-sm font-medium mb-1">ราคา (บาท)</label><input id="price" type="number" class="w-full px-4 py-2 border rounded-lg outline-none"></div>
-        <div><label class="block text-sm font-medium mb-1">รายละเอียด</label><textarea id="body" rows="3" class="w-full px-4 py-2 border rounded-lg outline-none resize-none"></textarea></div>
-        <div>
-            <label class="block text-sm font-medium mb-1">รูปภาพ</label>
-            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden">
-                <div id="uploadPlaceholder" class="text-gray-400 text-center"><i class="fa-solid fa-cloud-upload-alt text-2xl"></i><p class="text-xs mt-1">คลิกอัปโหลด</p></div>
-                <img id="imgPreview" class="absolute inset-0 w-full h-full object-cover hidden">
-                <input id="img" type="file" class="hidden" accept="image/*" onchange="previewImage(this)">
-            </label>
-            <button id="btnRemoveImg" onclick="removeImage()" class="hidden text-xs text-red-500 mt-1 hover:underline">ลบรูป</button>
-        </div>
-    </div>
-    <div class="p-6 border-t bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
-        <button onclick="closeModal()" class="px-5 py-2 border rounded-lg hover:bg-white">ยกเลิก</button>
-        <button onclick="savePost()" id="btnSave" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"><span id="btnSaveText">บันทึก</span> <i id="btnSaveIcon" class="fa-solid fa-paper-plane"></i></button>
-    </div>
-</dialog>
 
-<script>
-// --- CONFIGURATION ---
-// ⚠️ เปลี่ยน URL ด้านล่างเป็น Web App URL ของคุณ
-const API_URL = "https://script.google.com/macros/s/AKfycbw7n5pZvmm6dgQ8OmCx_Mn6SrCK8hhTm8HWouekZpl643S7Twf6eCPunp9cMtkYWAdOJw/exec";
-
-// --- STATE & DOM ---
-let posts = [];
-const dom = {
-    loading: document.getElementById('loading'), board: document.getElementById('board'),
-    dlg: document.getElementById('dlg'), postId: document.getElementById('postId'),
-    title: document.getElementById('title'), price: document.getElementById('price'),
-    contactName: document.getElementById('contact_name'), address: document.getElementById('address'),
-    body: document.getElementById('body'), imgInput: document.getElementById('img'),
-    imgPreview: document.getElementById('imgPreview')
-};
-
-function init() {
-    loadPosts();
-    ['q_desktop','q_mobile'].forEach(id => document.getElementById(id).addEventListener('input', (e) => filterPosts(e.target.value)));
-}
-
-// --- API HANDLING (Crucial for External Access) ---
-async function sendToGoogle(payload) {
-    // ส่งแบบ Plain Text เพื่อหลบ CORS Preflight
-    return fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-    }).then(res => res.json());
-}
-
-async function loadPosts() {
-    dom.loading.classList.remove('hidden'); dom.board.classList.add('hidden');
-    try {
-        const res = await fetch(API_URL + "?action=list");
-        const data = await res.json();
-        posts = data.posts || [];
-        renderPosts(posts);
-        dom.loading.classList.add('hidden'); dom.board.classList.remove('hidden');
-    } catch (err) {
-        dom.loading.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
-    }
-}
-
-function renderPosts(data) {
-    if (!data.length) return dom.board.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400">ไม่พบข้อมูล</div>`;
-    dom.board.innerHTML = data.map(p => {
-        const img = p.images?.[0] || 'https://placehold.co/600x400/eee/bbb?text=No+Image';
-        const price = parseInt(p.price||0).toLocaleString();
-        return `
-        <article class="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-all group flex flex-col h-full">
-            <div class="relative aspect-[4/3] bg-gray-200 overflow-hidden">
-                <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                <div class="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded text-xs font-bold text-gray-700 shadow">฿${price}</div>
+        <!-- Search Bar -->
+        <div class="relative w-full max-w-md group">
+            <div class="search-glow flex items-center bg-gray-900/80 border border-[#d4af37]/30 rounded-full overflow-hidden transition-all duration-300">
+                <input id="q" type="search" 
+                    class="w-full pl-5 pr-12 py-3 bg-transparent text-[#f4e4bc] placeholder-gray-500 focus:outline-none font-serif text-sm md:text-base" 
+                    placeholder="ค้นหานาม / ยุคสมัย / บทบาท..." autocomplete="off">
+                <button id="btnSearch" class="px-4 py-2 text-[#d4af37] hover:text-white transition-colors">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
             </div>
-            <div class="p-4 flex flex-col flex-grow">
-                <h3 class="font-semibold text-gray-900 line-clamp-2 mb-2">${p.title}</h3>
-                <p class="text-gray-500 text-sm line-clamp-3 mb-4 flex-grow whitespace-pre-line">${p.body}</p>
-                <div class="border-t pt-3 flex justify-between items-center mt-auto">
-                    <span class="text-xs text-gray-400">${new Date(p.createdAt).toLocaleDateString('th-TH')}</span>
-                    <div class="flex gap-2">
-                        <button onclick="editPost('${p.id}')" class="text-gray-400 hover:text-blue-600"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="delPost('${p.id}')" class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-[1600px] px-4 md:px-6 py-8 flex-1 flex flex-col">
+        
+        <!-- Loading / Error States -->
+        <div id="state" class="text-center py-20 text-[#d4af37] animate-pulse">
+            <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-4"></i><br>กำลังเปิดผนึกบันทึก...
+        </div>
+        <div id="error" class="hide text-center py-20 text-red-400">
+            <i class="fa-solid fa-triangle-exclamation text-2xl mb-4"></i><br>ไม่สามารถเข้าถึงข้อมูล CSV ได้
+        </div>
+
+        <!-- Grid Container -->
+        <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 min-h-[50vh]">
+            <!-- Cards will be injected here -->
+        </div>
+
+        <!-- Pagination -->
+        <div id="pager" class="flex justify-center items-center gap-6 mt-12 mb-8 py-4 border-t border-[#d4af37]/20 hide">
+            <button id="btnPrev" class="btn-outline px-6 py-2 rounded-full text-sm font-serif uppercase tracking-widest disabled:opacity-30 hover:disabled:shadow-none hover:disabled:bg-transparent">
+                <i class="fa-solid fa-chevron-left mr-2"></i> ก่อนหน้า
+            </button>
+            <span id="pageInfo" class="text-[#f4e4bc] font-serif text-sm tracking-widest">หน้า 1 / 1</span>
+            <button id="btnNext" class="btn-outline px-6 py-2 rounded-full text-sm font-serif uppercase tracking-widest disabled:opacity-30 hover:disabled:shadow-none hover:disabled:bg-transparent">
+                ถัดไป <i class="fa-solid fa-chevron-right ml-2"></i>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-6 text-[#d4af37]/40 text-xs font-serif border-t border-[#d4af37]/10">
+        ” การเรียนรู้อดีต คือกุญแจสู่อนาคต “
+    </footer>
+
+    <!-- ===== DIALOG (Modal) ===== -->
+    <dialog id="dlg" class="backdrop:backdrop-blur-sm">
+        <div class="flex flex-col max-h-[90vh]">
+            <!-- Dialog Header -->
+            <div class="px-6 py-4 border-b border-[#d4af37]/30 bg-gradient-to-r from-[#1a1a1a] to-[#0a0a0a] flex justify-between items-start">
+                <div>
+                    <h2 id="dlgName" class="text-2xl md:text-3xl font-bold text-[#d4af37] font-[Cinzel] mb-1">ชื่อบุคคล</h2>
+                    <div class="text-xs md:text-sm text-gray-400 font-serif space-x-2">
+                        <span id="dlgRole" class="px-2 py-0.5 border border-gray-700 rounded bg-gray-900">บทบาท</span>
+                        <span class="text-[#d4af37]">•</span>
+                        <span id="dlgEra">ยุคสมัย</span>
+                        <span class="text-[#d4af37]">•</span>
+                        <span id="dlgRegion">ภูมิภาค</span>
+                    </div>
+                </div>
+                <button id="dlgClose" class="text-gray-500 hover:text-[#d4af37] transition-colors text-xl p-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Dialog Body -->
+            <div class="p-0 overflow-y-auto custom-scroll">
+                <div class="flex flex-col md:flex-row">
+                    <!-- Image Side -->
+                    <div class="w-full md:w-1/3 bg-black relative min-h-[250px] md:min-h-full">
+                        <div id="dlgImg" class="absolute inset-0 bg-cover bg-center opacity-80"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 right-4 text-center">
+                            <div id="dlgLife" class="text-sm text-gray-300 bg-black/60 backdrop-blur px-3 py-1 rounded-full inline-block border border-gray-700">
+                                ช่วงชีวิต
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Side -->
+                    <div class="w-full md:w-2/3 p-6 md:p-8 bg-[#0f0f0f]">
+                        <h3 class="text-[#d4af37] font-bold mb-4 text-sm uppercase tracking-widest border-b border-[#d4af37]/20 pb-2">สังเขปประวัติ</h3>
+                        <p id="dlgSummary" class="text-gray-300 leading-relaxed font-light text-lg">
+                            รายละเอียดเนื้อหา...
+                        </p>
+
+                        <!-- Actions Area -->
+                        <div class="mt-8 flex flex-wrap gap-4 pt-6 border-t border-gray-800">
+                            <!-- ปุ่ม PDF -->
+                            <a id="dlgPdf" href="#" target="_blank" class="flex-1 btn-gold px-6 py-3 rounded text-center flex items-center justify-center gap-2 text-sm shadow-lg hover:shadow-gold/20">
+                                <i class="fa-regular fa-file-pdf"></i> เอกสารกรมศิลป์ (PDF)
+                            </a>
+                            <!-- ปุ่ม URL นอก (ฉบับการ์ตูนสั้น) -->
+                            <a id="dlgCartoon" href="#" target="_blank" class="flex-1 px-6 py-3 rounded text-center border border-gray-600 text-gray-300 hover:text-white hover:border-[#d4af37] hover:bg-[#d4af37]/10 transition-all text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-film"></i> ฉบับการ์ตูนสั้น
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </article>`;
-    }).join("");
-}
-function filterPosts(kw) { renderPosts(posts.filter(p => (p.title+p.body).toLowerCase().includes(kw.toLowerCase()))); }
+        </div>
+    </dialog>
 
-// --- ACTIONS ---
-function openNewPostModal() { resetForm(); document.getElementById('dlgTitle').textContent="ลงประกาศ"; dom.dlg.showModal(); }
-function closeModal() { dom.dlg.close(); }
-function editPost(id) {
-    const p = posts.find(x => x.id === id); if (!p) return;
-    resetForm();
-    dom.postId.value=p.id; dom.title.value=p.title; dom.price.value=p.price; dom.body.value=p.body;
-    if(p.images?.[0]) { dom.imgPreview.src=p.images[0]; dom.imgPreview.classList.remove('hidden'); document.getElementById('uploadPlaceholder').classList.add('opacity-0'); document.getElementById('btnRemoveImg').classList.remove('hidden'); }
-    document.getElementById('dlgTitle').textContent="แก้ไขประกาศ"; dom.dlg.showModal();
-}
+    <!-- ===== LOGIC SCRIPT ===== -->
+    <script>
+        /** URL CSV ของคุณ */
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRDdoKOWVgxwfC2feOQZovdCqr8Cn_gYRqpRVH6x_FwIUrAWlw1WSe2Yk9d8vk3IhVpUkB2darpyAve/pub?output=csv";
 
-async function savePost() {
-    const id = dom.postId.value;
-    if(!dom.title.value || !dom.price.value) return Swal.fire('แจ้งเตือน','กรุณาระบุข้อมูล','warning');
-    
-    setLoading(true);
-    let fullBody = dom.body.value;
-    if(dom.address.value) fullBody = `📍 ทำเล: ${dom.address.value}\n` + fullBody;
-    if(dom.contactName.value) fullBody = `👤 ผู้ติดต่อ: ${dom.contactName.value}\n` + fullBody;
+        /* Refs */
+        const grid = document.getElementById('grid');
+        const state = document.getElementById('state');
+        const errorBox = document.getElementById('error');
+        const qInput = document.getElementById('q');
+        const btnSearch = document.getElementById('btnSearch');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const pageInfo = document.getElementById('pageInfo');
+        const pager = document.getElementById('pager');
 
-    try {
-        let imgUrl = null;
-        if (dom.imgInput.files[0]) {
-             const b64 = await getBase64(dom.imgInput.files[0]);
-             const upRes = await sendToGoogle({ action:'upload', base64: b64.split(',')[1], name: dom.imgInput.files[0].name });
-             if(upRes.error) throw new Error(upRes.error);
-             imgUrl = upRes.url;
-        } else if (id) {
-             const old = posts.find(p=>p.id===id);
-             if(old && old.images?.[0] && !dom.imgPreview.classList.contains('hidden')) imgUrl = old.images[0];
+        /* Dialog Refs */
+        const dlg = document.getElementById('dlg');
+        const dlgName = document.getElementById('dlgName');
+        const dlgRole = document.getElementById('dlgRole');
+        const dlgEra = document.getElementById('dlgEra');
+        const dlgRegion = document.getElementById('dlgRegion');
+        const dlgLife = document.getElementById('dlgLife');
+        const dlgSummary = document.getElementById('dlgSummary');
+        const dlgImg = document.getElementById('dlgImg');
+        const dlgPdf = document.getElementById('dlgPdf');
+        const dlgCartoon = document.getElementById('dlgCartoon'); // เปลี่ยนจาก Wiki เป็น Cartoon
+        const dlgClose = document.getElementById('dlgClose');
+
+        let ALL = [];
+        let FILTERED = [];
+        const PAGE_SIZE = 12; // ปรับให้หารลงตัวกับ Grid 2,3,4,6 คอลัมน์
+        let CURRENT_PAGE = 1;
+
+        /* ===== Wikipedia Utils ===== */
+        function wikiThumbURL(title, width=600, lang='th'){
+            const norm = (title||'').trim().replace(/\s+/g, '_');
+            return `https://${lang}.wikipedia.org/api/rest_v1/page/thumbnail/${encodeURIComponent(norm)}/${width}`;
+        }
+        async function fetchSummaryThumb(title, lang='th'){
+            const norm = (title||'').trim().replace(/\s+/g, '_');
+            try{
+                const res = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(norm)}`);
+                if(!res.ok) return null;
+                const json = await res.json();
+                return json?.thumbnail?.source || null;
+            }catch{ return null; }
+        }
+        function preloadImage(src){
+            return new Promise(resolve=>{
+                if(!src) return resolve(null);
+                const img = new Image();
+                img.onload = ()=>resolve(src);
+                img.onerror = ()=>resolve(null);
+                img.src = src;
+            });
+        }
+        async function resolveImageForItem(it){
+            if(it.image_url){
+                const ok1 = await preloadImage(it.image_url);
+                if(ok1) return ok1;
+            }
+            const t1 = await preloadImage(wikiThumbURL(it.name, 640, 'th'));
+            if(t1) return t1;
+            
+            // ลองค้นหาด้วยชื่ออังกฤษถ้ามี
+            const t2src = await fetchSummaryThumb(it.name, 'th');
+            const t2 = await preloadImage(t2src);
+            return t2 || 'https://via.placeholder.com/600x800/0a0a0a/333333?text=No+Image';
         }
 
-        const res = await sendToGoogle({
-            action: 'save',
-            post: { id, title: dom.title.value, price: dom.price.value, body: fullBody, images: imgUrl ? [imgUrl]:[] }
+        /* ===== CSV Parser ===== */
+        function parseCSV(text){
+            const rows = [];
+            let cur = [], cell = '', quote = false;
+            for(let i=0;i<text.length;i++){
+                const c = text[i], n = text[i+1];
+                if(c === '"'){
+                    if(quote && n === '"'){ cell += '"'; i++; }
+                    else quote = !quote;
+                }else if(c === ',' && !quote){
+                    cur.push(cell.trim()); cell = '';
+                }else if((c === '\n' || c === '\r') && !quote){
+                    if(cell !== '' || cur.length){ cur.push(cell.trim()); rows.push(cur); cur = []; cell = ''; }
+                }else{ cell += c; }
+            }
+            if(cell !== '' || cur.length){ cur.push(cell.trim()); rows.push(cur); }
+            return rows;
+        }
+
+        function toObjects(rows){
+            if(!rows.length) return [];
+            const header = rows[0].map(h => h.trim().toLowerCase());
+            // Mapping column headers
+            const idx = {
+                name: header.indexOf('name'),
+                lifespan: header.indexOf('lifespan'),
+                role: header.indexOf('role'),
+                era: header.indexOf('era'),
+                region: header.indexOf('region'),
+                summary_th: header.indexOf('summary_th'),
+                image_url: header.indexOf('image_url'),
+                pdf_url: header.indexOf('pdf_url'),
+                url: header.indexOf('url') // ✅ เพิ่มการอ่านคอลัมน์ url
+            };
+            const out = [];
+            for(let i=1;i<rows.length;i++){
+                const r = rows[i]; if(!r || !r.length) continue;
+                const obj = {
+                    name: r[idx.name] || '',
+                    lifespan: r[idx.lifespan] || '',
+                    role: r[idx.role] || '',
+                    era: r[idx.era] || '',
+                    region: r[idx.region] || '',
+                    summary_th: r[idx.summary_th] || '',
+                    image_url: r[idx.image_url] || '',
+                    pdf_url: r[idx.pdf_url] || '',
+                    url: r[idx.url] || '' // ✅ อ่านค่า url
+                };
+                if(obj.name) out.push(obj);
+            }
+            return out;
+        }
+
+        /* ===== Pagination Logic ===== */
+        function updatePager(){
+            const tp = Math.max(1, Math.ceil(FILTERED.length / PAGE_SIZE));
+            pageInfo.textContent = `หน้า ${CURRENT_PAGE} / ${tp}`;
+            btnPrev.disabled = CURRENT_PAGE <= 1;
+            btnNext.disabled = CURRENT_PAGE >= tp;
+            pager.classList.toggle('hide', FILTERED.length === 0);
+        }
+        
+        function renderPage(){
+            const start = (CURRENT_PAGE - 1) * PAGE_SIZE;
+            const list = FILTERED.slice(start, start + PAGE_SIZE);
+            
+            grid.innerHTML = '';
+            if(!list.length){
+                state.innerHTML = '<span class="text-gray-500">ไม่พบบุคคลที่ค้นหา</span>';
+                state.classList.remove('hide');
+                return;
+            } else state.classList.add('hide');
+
+            list.forEach((it, index) => {
+                const card = document.createElement('div');
+                card.className = "card-wrapper group cursor-pointer h-64 md:h-80";
+                card.style.animation = `fadePop 0.5s ease-out forwards ${index * 0.05}s`;
+                card.style.opacity = '0';
+
+                card.innerHTML = `
+                    <div class="card-inner w-full h-full relative">
+                        <div class="w-full h-full bg-gray-800 animate-pulse absolute top-0 left-0 -z-10"></div>
+                        <div class="card-img-container w-full h-full"></div>
+                        
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90"></div>
+                        
+                        <div class="absolute bottom-0 left-0 w-full p-4 text-center transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                            <h3 class="text-sm md:text-lg font-bold text-[#f4e4bc] uppercase tracking-wider font-[Cinzel] mb-1 line-clamp-1">
+                                ${it.name}
+                            </h3>
+                            <p class="text-[10px] md:text-xs text-[#d4af37] font-serif tracking-widest opacity-80 group-hover:opacity-100">
+                                ${it.role || 'บุคคลสำคัญ'}
+                            </p>
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => openDialog(it));
+                grid.appendChild(card);
+                
+                const imgContainer = card.querySelector('.card-img-container');
+                resolveImageForItem(it).then(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.className = "card-img";
+                    img.loading = "lazy";
+                    imgContainer.appendChild(img);
+                });
+            });
+
+            updatePager();
+        }
+
+        /* ===== Dialog Functions ===== */
+        function openDialog(it){
+            dlgName.textContent = it.name;
+            dlgRole.textContent = it.role || '-';
+            dlgEra.textContent = it.era || '-';
+            dlgRegion.textContent = it.region || '-';
+            dlgLife.textContent = it.lifespan || 'ไม่ระบุช่วงเวลา';
+            dlgSummary.textContent = it.summary_th || 'ไม่มีข้อมูลสังเขป';
+            
+            // Set Image
+            dlgImg.style.backgroundImage = 'none';
+            resolveImageForItem(it).then(src => {
+                dlgImg.style.backgroundImage = `url('${src}')`;
+            });
+
+            // Set PDF Button
+            if(it.pdf_url) {
+                dlgPdf.href = it.pdf_url;
+                dlgPdf.classList.remove('hidden');
+                dlgPdf.classList.add('flex');
+            } else {
+                dlgPdf.classList.add('hidden');
+                dlgPdf.classList.remove('flex');
+            }
+
+            // ✅ Set Cartoon URL Button (แทนปุ่ม Wiki เดิม)
+            if(it.url) {
+                dlgCartoon.href = it.url;
+                dlgCartoon.classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                dlgCartoon.href = '#';
+                dlgCartoon.classList.add('opacity-50', 'pointer-events-none'); // จางลงถ้าไม่มีลิงก์
+            }
+
+            dlg.showModal();
+        }
+
+        dlgClose.addEventListener('click', () => dlg.close());
+        dlg.addEventListener('click', (e) => {
+            const rect = dlg.getBoundingClientRect();
+            if(e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+                dlg.close();
+            }
         });
-        if(res.error) throw new Error(res.error);
 
-        closeModal(); Swal.fire('สำเร็จ', 'บันทึกข้อมูลแล้ว', 'success'); loadPosts();
-    } catch(e) { Swal.fire('Error', e.message, 'error'); } finally { setLoading(false); }
-}
+        /* ===== Main Logic ===== */
+        async function loadCSV(){
+            try {
+                const res = await fetch(CSV_URL);
+                if(!res.ok) throw new Error('Network error');
+                const text = await res.text();
+                ALL = toObjects(parseCSV(text));
+                FILTERED = ALL.slice();
+                renderPage();
+            } catch(e) {
+                console.error(e);
+                state.classList.add('hide');
+                errorBox.classList.remove('hide');
+            }
+        }
 
-async function delPost(id) {
-    if(!(await Swal.fire({ title:'ยืนยันลบ?', showCancelButton:true, confirmButtonColor:'red', confirmButtonText:'ลบ' })).isConfirmed) return;
-    try {
-        const res = await sendToGoogle({ action:'delete', id });
-        if(res.error) throw new Error(res.error);
-        Swal.fire('ลบแล้ว','','success'); loadPosts();
-    } catch(e) { Swal.fire('Error',e.message,'error'); }
-}
+        /* Search & Events */
+        const handleSearch = () => {
+            const q = qInput.value.trim().toLowerCase();
+            if(!q) FILTERED = ALL.slice();
+            else {
+                FILTERED = ALL.filter(it => 
+                    (it.name||'').toLowerCase().includes(q) ||
+                    (it.role||'').toLowerCase().includes(q) ||
+                    (it.era||'').toLowerCase().includes(q)
+                );
+            }
+            CURRENT_PAGE = 1;
+            renderPage();
+        };
 
-// --- UTILS ---
-function previewImage(inpt) {
-    if(inpt.files[0]) {
-        const r = new FileReader();
-        r.onload = e => { dom.imgPreview.src = e.target.result; dom.imgPreview.classList.remove('hidden'); document.getElementById('uploadPlaceholder').classList.add('opacity-0'); document.getElementById('btnRemoveImg').classList.remove('hidden'); };
-        r.readAsDataURL(inpt.files[0]);
-    }
-}
-function removeImage() { dom.imgInput.value=""; dom.imgPreview.classList.add('hidden'); document.getElementById('uploadPlaceholder').classList.remove('opacity-0'); document.getElementById('btnRemoveImg').classList.add('hidden'); }
-function getBase64(file) { return new Promise((r,j) => { const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.onerror=j; fr.readAsDataURL(file); }); }
-function resetForm() { dom.postId.value=''; dom.title.value=''; dom.price.value=''; dom.contactName.value=''; dom.address.value=''; dom.body.value=''; removeImage(); }
-function setLoading(isLoad) { const b=document.getElementById('btnSave'); b.disabled=isLoad; b.classList.toggle('opacity-70',isLoad); document.getElementById('btnSaveText').textContent=isLoad?'กำลังบันทึก...':'บันทึก'; }
+        btnSearch.addEventListener('click', handleSearch);
+        qInput.addEventListener('keyup', (e) => { if(e.key === 'Enter') handleSearch(); });
+        qInput.addEventListener('input', handleSearch);
+        
+        btnPrev.addEventListener('click', () => {
+            if(CURRENT_PAGE > 1) { CURRENT_PAGE--; renderPage(); window.scrollTo({top:0, behavior:'smooth'}); }
+        });
+        btnNext.addEventListener('click', () => {
+            const tp = Math.max(1, Math.ceil(FILTERED.length / PAGE_SIZE));
+            if(CURRENT_PAGE < tp) { CURRENT_PAGE++; renderPage(); window.scrollTo({top:0, behavior:'smooth'}); }
+        });
 
-init();
-</script>
+        /* Start */
+        loadCSV();
+
+    </script>
 </body>
 </html>
-

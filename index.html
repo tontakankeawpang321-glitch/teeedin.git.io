@@ -70,15 +70,6 @@
                    class="pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64 transition-all">
             <i class="fa-solid fa-search absolute left-3.5 top-3 text-gray-400"></i>
         </div>
-
-        <!-- User Profile / Login -->
-        <div id="userSection" class="flex items-center gap-3">
-            <div id="loadingUser" class="text-xs text-gray-400">กำลังโหลด...</div>
-            <button id="btnLogin" class="hidden flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">
-                <i class="fa-brands fa-google text-red-500"></i>
-                เข้าสู่ระบบ
-            </button>
-        </div>
       </div>
     </div>
   </div>
@@ -101,7 +92,8 @@
             <h1 class="text-2xl font-bold text-gray-900">ประกาศขายที่ดินล่าสุด</h1>
             <p class="text-gray-500 text-sm mt-1">ค้นพบโอกาสในการลงทุนและที่ดินสวยๆ ทั่วประเทศ</p>
         </div>
-        <button id="btnNew" onclick="openNewPostModal()" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-md transition-all flex items-center gap-2 transform active:scale-95">
+        <!-- ปุ่มลงประกาศโชว์ตลอด ไม่ต้องรอ Login -->
+        <button id="btnNew" onclick="openNewPostModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-md transition-all flex items-center gap-2 transform active:scale-95">
             <i class="fa-solid fa-plus"></i> ลงประกาศฟรี
         </button>
     </div>
@@ -124,23 +116,26 @@
     </div>
 </footer>
 
-<!-- Modal / Dialog for New Post -->
+<!-- Modal / Dialog for New Post & Edit -->
 <dialog id="dlg" class="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-lg backdrop:bg-gray-900/50">
     <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-        <h3 class="text-lg font-bold text-gray-900">ลงประกาศขายที่ดิน</h3>
+        <h3 id="dlgTitle" class="text-lg font-bold text-gray-900">ลงประกาศขายที่ดิน</h3>
         <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
             <i class="fa-solid fa-xmark text-lg"></i>
         </button>
     </div>
     
     <div class="p-6 space-y-4">
+        <!-- Hidden ID for Edit Mode -->
+        <input type="hidden" id="postId">
+
         <!-- Title -->
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">หัวข้อประกาศ</label>
             <input id="title" type="text" placeholder="เช่น ขายที่ดินติดแม่น้ำ 2 ไร่" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
         </div>
 
-        <!-- Name & Address (New) -->
+        <!-- Name & Address -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ติดต่อ</label>
@@ -192,9 +187,11 @@
 </dialog>
 
 <script>
+// --- Configuration ---
+const API_URL = "https://script.google.com/macros/s/AKfycbxn9WF_XSX2qc2rhtzXCDJaWNkjKuliuRzfRWPOoqMAzNnSP80Yk6DsOOSC8TXVw2QDgw/exec";
+
 // --- State Management ---
 let posts = [];
-let currentUser = null;
 
 // --- Elements ---
 const dom = {
@@ -202,11 +199,15 @@ const dom = {
     board: document.getElementById('board'),
     q_desktop: document.getElementById('q_desktop'),
     q_mobile: document.getElementById('q_mobile'),
-    btnLogin: document.getElementById('btnLogin'),
-    btnNew: document.getElementById('btnNew'),
-    userSection: document.getElementById('userSection'),
-    loadingUser: document.getElementById('loadingUser'),
     dlg: document.getElementById('dlg'),
+    dlgTitle: document.getElementById('dlgTitle'),
+    // Inputs
+    postId: document.getElementById('postId'),
+    title: document.getElementById('title'),
+    price: document.getElementById('price'),
+    contactName: document.getElementById('contact_name'),
+    address: document.getElementById('address'),
+    body: document.getElementById('body'),
     imgInput: document.getElementById('img'),
     imgPreview: document.getElementById('imgPreview'),
     uploadPlaceholder: document.getElementById('uploadPlaceholder'),
@@ -215,68 +216,29 @@ const dom = {
 
 // --- Initialization ---
 function init() {
-    // 1. Check Login
-    google.script.run
-        .withSuccessHandler(renderUserHeader)
-        .withFailureHandler(err => console.error(err))
-        .clientGetProfile();
-
-    // 2. Load Posts
     loadPosts();
-
-    // 3. Bind Events
     dom.q_desktop.addEventListener('input', (e) => filterPosts(e.target.value));
     dom.q_mobile.addEventListener('input', (e) => filterPosts(e.target.value));
 }
 
-// --- User & Auth ---
-function renderUserHeader(userData) {
-    dom.loadingUser.remove();
-    
-    if (userData && userData.email) {
-        currentUser = userData.email;
-        dom.btnLogin.classList.add('hidden');
-        dom.btnNew.classList.remove('hidden');
-        
-        const avatarUrl = userData.photo || "https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=" + (userData.name || 'User');
-        
-        const profileHtml = `
-            <div class="flex items-center gap-3">
-                <div class="text-right hidden sm:block">
-                    <div class="text-sm font-semibold text-gray-900">${userData.name || currentUser}</div>
-                    <div class="text-xs text-gray-500">Member</div>
-                </div>
-                <img src="${avatarUrl}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover">
-            </div>
-        `;
-        
-        const div = document.createElement('div');
-        div.innerHTML = profileHtml;
-        dom.userSection.appendChild(div);
-    } else {
-        // Not logged in (Guest)
-        dom.btnLogin.classList.remove('hidden');
-        dom.btnNew.classList.add('hidden');
-    }
-}
-
-// --- Data Loading ---
-function loadPosts() {
+// --- Data Loading (Read) ---
+async function loadPosts() {
     dom.loading.classList.remove('hidden');
     dom.board.classList.add('hidden');
     
-    google.script.run
-        .withSuccessHandler(data => {
-            posts = data || [];
-            renderPosts(posts);
-            dom.loading.classList.add('hidden');
-            dom.board.classList.remove('hidden');
-        })
-        .withFailureHandler(err => {
-            console.error(err);
-            dom.loading.innerHTML = `<p class="text-red-500">โหลดข้อมูลล้มเหลว</p>`;
-        })
-        .clientGetPosts();
+    try {
+        const res = await fetch(API_URL + "?action=list");
+        const data = await res.json();
+        
+        posts = data.posts || [];
+        renderPosts(posts);
+        
+        dom.loading.classList.add('hidden');
+        dom.board.classList.remove('hidden');
+    } catch (err) {
+        console.error(err);
+        dom.loading.innerHTML = `<p class="text-red-500">โหลดข้อมูลล้มเหลว: ${err.message}</p>`;
+    }
 }
 
 function renderPosts(data) {
@@ -291,23 +253,17 @@ function renderPosts(data) {
     }
 
     dom.board.innerHTML = data.map(p => {
-        const isOwner = currentUser && p.author === currentUser;
         const imgUrl = p.images?.[0] || 'https://placehold.co/600x400/e2e8f0/94a3b8?text=No+Image';
         const priceFmt = parseInt(p.price || 0).toLocaleString('th-TH');
         const dateFmt = new Date(p.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
 
         return `
-        <article class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col h-full">
+        <article class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col h-full relative">
             <div class="relative aspect-[4/3] overflow-hidden bg-gray-100">
                 <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-semibold text-gray-700 shadow-sm">
                     <i class="fa-solid fa-tag text-blue-500 mr-1"></i> ขาย
                 </div>
-                ${isOwner ? `
-                <button onclick="delPost('${p.id}')" class="absolute top-2 left-2 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                    <i class="fa-solid fa-trash text-xs"></i>
-                </button>
-                ` : ''}
             </div>
             
             <div class="p-4 flex flex-col flex-grow">
@@ -323,9 +279,15 @@ function renderPosts(data) {
                     <span class="text-xs text-gray-400">
                         <i class="fa-regular fa-clock mr-1"></i> ${dateFmt}
                     </span>
-                    <span class="text-xs text-gray-500">
-                         <i class="fa-regular fa-user mr-1"></i> ${p.author.split('@')[0]}
-                    </span>
+                    <!-- CRUD Actions for Everyone -->
+                    <div class="flex gap-2">
+                        <button onclick="editPost('${p.id}')" class="text-gray-400 hover:text-blue-600 transition-colors p-1" title="แก้ไข">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="delPost('${p.id}')" class="text-gray-400 hover:text-red-600 transition-colors p-1" title="ลบ">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </article>
@@ -342,16 +304,178 @@ function filterPosts(keyword) {
     renderPosts(filtered);
 }
 
-// --- CRUD Actions ---
+// --- Create / Update (Save) ---
 
 function openNewPostModal() {
     resetForm();
+    dom.dlgTitle.textContent = "ลงประกาศขายที่ดิน";
+    document.getElementById('btnSaveText').textContent = "บันทึกประกาศ";
+    dom.dlg.showModal();
+}
+
+function editPost(id) {
+    const post = posts.find(p => p.id === id);
+    if (!post) return;
+
+    resetForm();
+    
+    // Fill data
+    dom.postId.value = post.id;
+    dom.title.value = post.title || "";
+    dom.price.value = post.price || "";
+    dom.body.value = post.body || ""; // Note: Body contains merged address/name, user can edit text directly
+    
+    // Image Preview (if exists)
+    if (post.images && post.images.length > 0) {
+        dom.imgPreview.src = post.images[0];
+        dom.imgPreview.classList.remove('hidden');
+        dom.uploadPlaceholder.classList.add('opacity-0');
+        dom.btnRemoveImg.classList.remove('hidden');
+    }
+
+    dom.dlgTitle.textContent = "แก้ไขประกาศ";
+    document.getElementById('btnSaveText').textContent = "อัปเดตประกาศ";
     dom.dlg.showModal();
 }
 
 function closeModal() {
     dom.dlg.close();
 }
+
+async function savePost() {
+    const id = dom.postId.value; // If value exists, it's an Update
+    const title = dom.title.value;
+    const price = dom.price.value;
+    const contactName = dom.contactName.value;
+    const address = dom.address.value;
+    const bodyText = dom.body.value;
+    const file = dom.imgInput.files[0];
+
+    if(!title || !price) {
+        Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุหัวข้อและราคา', 'warning');
+        return;
+    }
+
+    setLoadingState(true);
+
+    // Combine extra fields into body ONLY if they are not empty
+    // If Editing, user might have just edited the body directly, so we append only if typed in new inputs
+    let fullBody = bodyText;
+    let extras = "";
+    if (address) extras += `📍 ทำเล: ${address}\n`;
+    if (contactName) extras += `👤 ผู้ติดต่อ: ${contactName}\n`;
+    
+    if (extras) {
+        fullBody = extras + "\n" + fullBody;
+    }
+
+    try {
+        let uploadedUrl = null;
+
+        // 1. Upload Image (only if new file selected)
+        if (file) {
+             const base64Data = await getBase64(file);
+             const content = base64Data.split(',')[1];
+             
+             const uploadRes = await fetch(API_URL, {
+                 method: 'POST',
+                 body: JSON.stringify({
+                     action: 'upload',
+                     base64: content,
+                     name: file.name
+                 })
+             });
+             const uploadJson = await uploadRes.json();
+             if (uploadJson.error) throw new Error(uploadJson.error);
+             uploadedUrl = uploadJson.url;
+        } else {
+            // Keep old image if editing and no new file upload
+            if (id) {
+                const existingPost = posts.find(p => p.id === id);
+                if (existingPost && existingPost.images && existingPost.images.length > 0) {
+                    uploadedUrl = existingPost.images[0]; 
+                    // Note: If you have "Remove Image" logic, handle it here by checking imgPreview src
+                    if (dom.imgPreview.classList.contains('hidden')) uploadedUrl = null;
+                }
+            }
+        }
+
+        // 2. Save Post Data
+        const postData = {
+            id: id || null, // Send ID if updating
+            title: title,
+            price: price,
+            body: fullBody.trim(),
+            images: uploadedUrl ? [uploadedUrl] : []
+        };
+
+        const saveRes = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'save',
+                post: postData
+            })
+        });
+        const saveJson = await saveRes.json();
+
+        if (saveJson.error) throw new Error(saveJson.error);
+
+        // Success
+        setLoadingState(false);
+        closeModal();
+        Swal.fire({
+            icon: 'success', 
+            title: 'สำเร็จ', 
+            text: id ? 'แก้ไขข้อมูลเรียบร้อยแล้ว' : 'ลงประกาศเรียบร้อยแล้ว',
+            timer: 1500, showConfirmButton: false
+        });
+        loadPosts();
+
+    } catch (err) {
+        setLoadingState(false);
+        Swal.fire('เกิดข้อผิดพลาด', err.message || err.toString(), 'error');
+        console.error(err);
+    }
+}
+
+// --- Delete ---
+
+async function delPost(id) {
+    const result = await Swal.fire({
+        title: 'ยืนยันการลบ?', text: "คุณต้องการลบประกาศนี้ใช่หรือไม่", icon: 'warning',
+        showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'ลบประกาศ', cancelButtonText: 'ยกเลิก'
+    });
+
+    if (result.isConfirmed) {
+        Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
+        
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'delete',
+                    id: id
+                })
+            });
+            const json = await res.json();
+            
+            Swal.close();
+            
+            if(json.error) {
+                 Swal.fire('Error', json.error, 'error');
+            } else {
+                loadPosts();
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                Toast.fire({ icon: 'success', title: 'ลบเรียบร้อยแล้ว' });
+            }
+        } catch (err) {
+            Swal.close();
+            Swal.fire('Error', 'ไม่สามารถเชื่อมต่อ server ได้', 'error');
+        }
+    }
+}
+
+// --- Utilities ---
 
 function previewImage(input) {
     if (input.files && input.files[0]) {
@@ -374,100 +498,12 @@ function removeImage() {
     dom.btnRemoveImg.classList.add('hidden');
 }
 
-function savePost() {
-    const title = document.getElementById('title').value;
-    const price = document.getElementById('price').value;
-    const contactName = document.getElementById('contact_name').value;
-    const address = document.getElementById('address').value;
-    const bodyText = document.getElementById('body').value;
-    const file = dom.imgInput.files[0];
-
-    if(!title || !price) {
-        Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุหัวข้อและราคา', 'warning');
-        return;
-    }
-
-    setLoadingState(true);
-
-    // Combine extra fields into body
-    let fullBody = "";
-    if (address) fullBody += `📍 ทำเล: ${address}\n\n`;
-    if (bodyText) fullBody += `${bodyText}\n\n`;
-    if (contactName) fullBody += `👤 ผู้ติดต่อ: ${contactName}`;
-
-    // 1. Helper to upload then save
-    const processSave = (imgUrl) => {
-        const postData = {
-            title: title,
-            price: price,
-            body: fullBody.trim(),
-            images: imgUrl ? [imgUrl] : []
-        };
-        
-        google.script.run
-            .withSuccessHandler(res => {
-                setLoadingState(false);
-                if(res.error) {
-                    Swal.fire('เกิดข้อผิดพลาด', res.error, 'error');
-                } else {
-                    closeModal();
-                    Swal.fire({
-                        icon: 'success', title: 'สำเร็จ', text: 'ลงประกาศเรียบร้อยแล้ว',
-                        timer: 1500, showConfirmButton: false
-                    });
-                    loadPosts();
-                }
-            })
-            .withFailureHandler(err => {
-                setLoadingState(false);
-                Swal.fire('Error', err.toString(), 'error');
-            })
-            .clientSavePost(postData);
-    };
-
-    // 2. Upload Logic
-    if (file) {
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => {
-             // Send base64 to server
-            google.script.run
-                .withSuccessHandler(res => {
-                    if(res.error) {
-                        setLoadingState(false);
-                        Swal.fire('Upload Failed', res.error, 'error');
-                    } else {
-                        processSave(res.url);
-                    }
-                })
-                .clientUpload(reader.result, file.name);
-        };
-    } else {
-        processSave(null);
-    }
-}
-
-function delPost(id) {
-    Swal.fire({
-        title: 'ยืนยันการลบ?', text: "คุณต้องการลบประกาศนี้ใช่หรือไม่", icon: 'warning',
-        showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'ลบประกาศ', cancelButtonText: 'ยกเลิก'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
-            
-            google.script.run
-                .withSuccessHandler(res => {
-                    Swal.close();
-                    if(res.error) {
-                        Swal.fire('Error', res.error, 'error');
-                    } else {
-                        loadPosts();
-                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
-                        Toast.fire({ icon: 'success', title: 'ลบเรียบร้อยแล้ว' });
-                    }
-                })
-                .clientDeletePost(id);
-        }
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
     });
 }
 
@@ -492,15 +528,16 @@ function setLoadingState(isLoading) {
 }
 
 function resetForm() {
-    document.getElementById('title').value = '';
-    document.getElementById('price').value = '';
-    document.getElementById('contact_name').value = '';
-    document.getElementById('address').value = '';
-    document.getElementById('body').value = '';
+    dom.postId.value = '';
+    dom.title.value = '';
+    dom.price.value = '';
+    dom.contactName.value = '';
+    dom.address.value = '';
+    dom.body.value = '';
     removeImage();
 }
 
-// Start
+// Start App
 init();
 </script>
 

@@ -3,18 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ขายที่ดิน – Google Drive Backend</title>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<title>ขายที่ดิน – Google Login</title>
 
 <style>
-/* ====== UI เดิม (ย่อจากของคุณ) ====== */
 body{margin:0;font-family:system-ui;background:#f7f8fb}
-header{background:#fff;border-bottom:1px solid #e5e7eb;padding:12px 16px;display:flex;gap:12px;align-items:center}
+header{background:#fff;border-bottom:1px solid #e5e7eb;padding:12px 16px;display:flex;align-items:center;gap:10px}
 .btn{padding:8px 12px;border-radius:8px;border:0;background:#2563eb;color:#fff;cursor:pointer}
 .btn.ghost{background:#eef2ff;color:#1e40af}
-.wrap{max-width:1100px;margin:20px auto;padding:0 16px}
+.hidden{display:none}
+.wrap{max-width:1000px;margin:20px auto;padding:0 16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
 .thumb{width:100%;aspect-ratio:16/10;object-fit:cover;background:#eee}
@@ -27,10 +24,11 @@ dialog{border:0;border-radius:14px;padding:16px}
 <body>
 
 <header>
-  <div id="userBox" class="muted">ยังไม่ได้เข้าสู่ระบบ</div>
+  <img id="avatar" class="hidden" style="width:32px;height:32px;border-radius:50%">
+  <span id="userName" class="muted"></span>
   <div style="flex:1"></div>
-  <button class="btn ghost" onclick="checkLogin()">เช็กสถานะ</button>
-  <button class="btn" onclick="openEditor()">+ ลงประกาศ</button>
+  <button id="btnLogin" class="btn ghost">Login Google</button>
+  <button id="btnNew" class="btn hidden">+ ลงประกาศ</button>
 </header>
 
 <main class="wrap">
@@ -38,7 +36,6 @@ dialog{border:0;border-radius:14px;padding:16px}
   <section id="board" class="grid"></section>
 </main>
 
-<!-- ===== Editor ===== -->
 <dialog id="dlg">
   <h3>ลงประกาศขายที่ดิน</h3>
   <input id="title" placeholder="หัวเรื่อง" style="width:100%;padding:8px"><br><br>
@@ -50,63 +47,70 @@ dialog{border:0;border-radius:14px;padding:16px}
 </dialog>
 
 <script>
-/* ================= CONFIG ================= */
 const API_URL = "https://script.google.com/macros/s/AKfycbxn9WF_XSX2qc2rhtzXCDJaWNkjKuliuRzfRWPOoqMAzNnSP80Yk6DsOOSC8TXVw2QDgw/exec";
 
 let posts = [];
 let currentUser = null;
 
-/* ================= LOAD ================= */
-async function loadAll(){
-  const r = await fetch(API_URL + "?action=list");
-  const d = await r.json();
-  currentUser = d.user;
-  posts = d.posts || [];
-  document.getElementById("userBox").textContent =
-    currentUser ? "ผู้ใช้: " + currentUser : "ยังไม่ได้เข้าสู่ระบบ";
-  render(posts);
-}
-
-function render(list){
-  const kw = document.getElementById("q").value.toLowerCase();
-  const f = list.filter(p =>
-    !kw || (p.title||"").toLowerCase().includes(kw)
-  );
-
-  board.innerHTML = f.map(p => `
-    <article class="card">
-      <img class="thumb" src="${p.images?.[0]?.url || ''}">
-      <div class="meta">
-        <b>${p.title || '-'}</b>
-        <div class="muted">ราคา: ${p.price || '-'}</div>
-        <button class="btn ghost" onclick="view('${p.id}')">ดูรายละเอียด</button>
-      </div>
-    </article>
-  `).join("") || "<div class='muted'>ยังไม่มีประกาศ</div>";
-}
-
-q.oninput = () => render(posts);
-
-/* ================= LOGIN ================= */
-async function checkLogin(){
+async function whoami(force=false){
   const r = await fetch(API_URL + "?action=whoami");
   const d = await r.json();
-  alert(d.email ? "Login: "+d.email : "ยังไม่ได้ Login");
+
+  currentUser = d.email || null;
+
+  if (currentUser){
+    userName.textContent = d.name || d.email;
+    avatar.src = d.photo || "https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png";
+    avatar.classList.remove("hidden");
+    btnNew.classList.remove("hidden");
+    btnLogin.classList.add("hidden");
+  } else {
+    userName.textContent = "ยังไม่ได้เข้าสู่ระบบ";
+    avatar.classList.add("hidden");
+    btnNew.classList.add("hidden");
+    btnLogin.classList.remove("hidden");
+  }
 }
 
-/* ================= EDITOR ================= */
+btnLogin.onclick = () => whoami(true);
+
+async function loadPosts(){
+  const r = await fetch(API_URL + "?action=list");
+  const d = await r.json();
+  posts = d.posts || [];
+  render();
+}
+
+function render(){
+  const kw = q.value.toLowerCase();
+  board.innerHTML = posts.filter(p =>
+    !kw || (p.title||"").toLowerCase().includes(kw)
+  ).map(p => {
+    const owner = currentUser && p.author === currentUser;
+    return `
+      <article class="card">
+        <img class="thumb" src="${p.images?.[0]?.url||''}">
+        <div class="meta">
+          <b>${p.title||'-'}</b>
+          <div class="muted">ราคา: ${p.price||'-'}</div>
+          ${owner ? `
+            <button class="btn ghost" onclick="edit('${p.id}')">แก้ไข</button>
+            <button class="btn ghost" onclick="delPost('${p.id}')">ลบ</button>
+          ` : ``}
+        </div>
+      </article>
+    `;
+  }).join("") || "<div class='muted'>ยังไม่มีประกาศ</div>";
+}
+q.oninput = render;
+
 const dlg = document.getElementById("dlg");
+btnNew.onclick = () => dlg.showModal();
 
-function openEditor(){
-  dlg.showModal();
-}
-
-/* ================= SAVE ================= */
 async function savePost(){
   let images = [];
-  const f = img.files[0];
-  if (f){
-    images.push({ url: await uploadImage(f) });
+  if (img.files[0]){
+    images.push({ url: await uploadImage(img.files[0]) });
   }
 
   await fetch(API_URL,{
@@ -123,13 +127,24 @@ async function savePost(){
   });
 
   dlg.close();
-  loadAll();
+  loadPosts();
 }
 
-/* ================= UPLOAD ================= */
+async function delPost(id){
+  if (!confirm("ลบประกาศนี้?")) return;
+  await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"delete",
+      id
+    })
+  });
+  loadPosts();
+}
+
 function fileToBase64(file){
   return new Promise(res=>{
-    const r = new FileReader();
+    const r=new FileReader();
     r.onload=()=>res(r.result);
     r.readAsDataURL(file);
   });
@@ -148,8 +163,8 @@ async function uploadImage(file){
   return (await r.json()).url;
 }
 
-/* ================= INIT ================= */
-loadAll();
+whoami();
+loadPosts();
 </script>
 
 </body>

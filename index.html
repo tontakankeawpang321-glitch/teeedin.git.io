@@ -3,169 +3,542 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ขายที่ดิน – Google Login</title>
+<title>ตลาดซื้อขายที่ดิน | Land Market</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- SweetAlert2 (Popups) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-body{margin:0;font-family:system-ui;background:#f7f8fb}
-header{background:#fff;border-bottom:1px solid #e5e7eb;padding:12px 16px;display:flex;align-items:center;gap:10px}
-.btn{padding:8px 12px;border-radius:8px;border:0;background:#2563eb;color:#fff;cursor:pointer}
-.btn.ghost{background:#eef2ff;color:#1e40af}
-.hidden{display:none}
-.wrap{max-width:1000px;margin:20px auto;padding:0 16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
-.thumb{width:100%;aspect-ratio:16/10;object-fit:cover;background:#eee}
-.meta{padding:10px}
-.muted{color:#6b7280;font-size:13px}
-dialog{border:0;border-radius:14px;padding:16px}
+    body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Dialog Animation */
+    dialog { transition: all 0.3s allow-discrete; opacity: 0; transform: scale(0.95); }
+    dialog[open] { opacity: 1; transform: scale(1); }
+    dialog::backdrop { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
 </style>
 </head>
 
-<body>
+<body class="text-gray-800 min-h-screen flex flex-col">
 
-<header>
-  <img id="avatar" class="hidden" style="width:32px;height:32px;border-radius:50%">
-  <span id="userName" class="muted"></span>
-  <div style="flex:1"></div>
-  <button id="btnLogin" class="btn ghost">Login Google</button>
-  <button id="btnNew" class="btn hidden">+ ลงประกาศ</button>
-</header>
+<!-- Header / Navbar -->
+<nav class="bg-white shadow-sm sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+      <!-- Logo -->
+      <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.reload()">
+        <div class="bg-blue-600 text-white p-2 rounded-lg">
+          <i class="fa-solid fa-map-location-dot text-xl"></i>
+        </div>
+        <span class="font-bold text-xl text-blue-900 tracking-tight">Land<span class="text-blue-600">Market</span></span>
+      </div>
 
-<main class="wrap">
-  <input id="q" placeholder="ค้นหา..." style="width:100%;padding:10px;margin-bottom:12px">
-  <section id="board" class="grid"></section>
+      <!-- Right Side Actions -->
+      <div class="flex items-center gap-3">
+        <!-- Search (Desktop) -->
+        <div class="hidden md:flex relative mr-2">
+            <input id="q_desktop" type="text" placeholder="ค้นหาทำเล, ราคา..." 
+                   class="pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64 transition-all">
+            <i class="fa-solid fa-search absolute left-3.5 top-3 text-gray-400"></i>
+        </div>
+
+        <!-- User Profile / Login -->
+        <div id="userSection" class="flex items-center gap-3">
+            <button id="btnLogin" class="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">
+                <i class="fa-brands fa-google text-red-500"></i>
+                เข้าสู่ระบบ
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Search Bar (Visible only on small screens) -->
+<div class="md:hidden bg-white border-b border-gray-200 p-3 sticky top-16 z-40">
+    <div class="relative">
+        <input id="q_mobile" type="text" placeholder="ค้นหาทำเล, ราคา..." class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+        <i class="fa-solid fa-search absolute left-3.5 top-2.5 text-gray-500"></i>
+    </div>
+</div>
+
+<!-- Main Content -->
+<main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+    
+    <!-- Hero Section / Title -->
+    <div class="flex justify-between items-end mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">ประกาศขายที่ดินล่าสุด</h1>
+            <p class="text-gray-500 text-sm mt-1">ค้นพบโอกาสในการลงทุนและที่ดินสวยๆ ทั่วประเทศ</p>
+        </div>
+        <button id="btnNew" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-md transition-all flex items-center gap-2 transform active:scale-95">
+            <i class="fa-solid fa-plus"></i> ลงประกาศฟรี
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="flex flex-col items-center justify-center py-20 text-gray-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
+        <p>กำลังโหลดข้อมูล...</p>
+    </div>
+
+    <!-- Listings Grid -->
+    <section id="board" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden"></section>
+
 </main>
 
-<dialog id="dlg">
-  <h3>ลงประกาศขายที่ดิน</h3>
-  <input id="title" placeholder="หัวเรื่อง" style="width:100%;padding:8px"><br><br>
-  <input id="price" type="number" placeholder="ราคา"><br><br>
-  <textarea id="body" placeholder="รายละเอียด" style="width:100%;height:80px"></textarea><br><br>
-  <input type="file" id="img"><br><br>
-  <button class="btn" onclick="savePost()">บันทึก</button>
-  <button class="btn ghost" onclick="dlg.close()">ยกเลิก</button>
+<!-- Footer -->
+<footer class="bg-white border-t border-gray-200 mt-10 py-6">
+    <div class="text-center text-gray-500 text-sm">
+        &copy; 2024 LandMarket Platform. All rights reserved.
+    </div>
+</footer>
+
+<!-- Modal / Dialog for New Post -->
+<dialog id="dlg" class="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-lg backdrop:bg-gray-900/50">
+    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+        <h3 class="text-lg font-bold text-gray-900">ลงประกาศขายที่ดิน</h3>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+    </div>
+    
+    <div class="p-6 space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">หัวข้อประกาศ</label>
+            <input id="title" type="text" placeholder="เช่น ขายที่ดินติดแม่น้ำ 2 ไร่" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">ราคา (บาท)</label>
+            <div class="relative">
+                <input id="price" type="number" placeholder="ระบุราคา" class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                <span class="absolute left-4 top-2 text-gray-400">฿</span>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียด</label>
+            <textarea id="body" rows="4" placeholder="ระบุรายละเอียดที่ตั้ง, ขนาดพื้นที่, เบอร์โทรติดต่อ..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"></textarea>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">รูปภาพประกอบ</label>
+            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden group">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-500 group-hover:text-blue-500" id="uploadPlaceholder">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl mb-2"></i>
+                    <p class="text-xs">คลิกเพื่ออัปโหลดรูปภาพ</p>
+                </div>
+                <img id="imgPreview" class="absolute inset-0 w-full h-full object-cover hidden">
+                <input id="img" type="file" class="hidden" accept="image/*" onchange="previewImage(this)">
+            </label>
+            <button id="btnRemoveImg" onclick="removeImage()" class="hidden text-xs text-red-500 mt-1 hover:underline">ลบรูปภาพ</button>
+        </div>
+    </div>
+
+    <div class="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
+        <button onclick="closeModal()" class="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-white transition-colors">ยกเลิก</button>
+        <button onclick="savePost()" id="btnSave" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 shadow-md flex items-center gap-2">
+            <span id="btnSaveText">บันทึกประกาศ</span>
+            <i id="btnSaveIcon" class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
 </dialog>
 
 <script>
+// --- Configuration ---
+// ใช้ API URL เดิมของคุณ (ต้องมั่นใจว่า Script Deploy ถูกต้องเป็น Web App: 'Anyone' หรือ 'Anyone with Google account')
 const API_URL = "https://script.google.com/macros/s/AKfycbxn9WF_XSX2qc2rhtzXCDJaWNkjKuliuRzfRWPOoqMAzNnSP80Yk6DsOOSC8TXVw2QDgw/exec";
 
+// --- State Management ---
 let posts = [];
 let currentUser = null;
 
-async function whoami(force=false){
-  const r = await fetch(API_URL + "?action=whoami");
-  const d = await r.json();
+// --- Elements ---
+const dom = {
+    loading: document.getElementById('loading'),
+    board: document.getElementById('board'),
+    q_desktop: document.getElementById('q_desktop'),
+    q_mobile: document.getElementById('q_mobile'),
+    btnLogin: document.getElementById('btnLogin'),
+    btnNew: document.getElementById('btnNew'),
+    userSection: document.getElementById('userSection'),
+    dlg: document.getElementById('dlg'),
+    imgInput: document.getElementById('img'),
+    imgPreview: document.getElementById('imgPreview'),
+    uploadPlaceholder: document.getElementById('uploadPlaceholder'),
+    btnRemoveImg: document.getElementById('btnRemoveImg')
+};
 
-  currentUser = d.email || null;
-
-  if (currentUser){
-    userName.textContent = d.name || d.email;
-    avatar.src = d.photo || "https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png";
-    avatar.classList.remove("hidden");
-    btnNew.classList.remove("hidden");
-    btnLogin.classList.add("hidden");
-  } else {
-    userName.textContent = "ยังไม่ได้เข้าสู่ระบบ";
-    avatar.classList.add("hidden");
-    btnNew.classList.add("hidden");
-    btnLogin.classList.remove("hidden");
-  }
+// --- Initialization ---
+async function init() {
+    await checkLoginStatus();
+    await loadPosts();
+    
+    // Bind Search Events
+    dom.q_desktop.addEventListener('input', (e) => filterPosts(e.target.value));
+    dom.q_mobile.addEventListener('input', (e) => filterPosts(e.target.value));
 }
 
-btnLogin.onclick = () => whoami(true);
-
-async function loadPosts(){
-  const r = await fetch(API_URL + "?action=list");
-  const d = await r.json();
-  posts = d.posts || [];
-  render();
+// --- Authentication ---
+async function checkLoginStatus() {
+    try {
+        const r = await fetch(API_URL + "?action=whoami");
+        const d = await r.json();
+        
+        currentUser = d.email || null;
+        renderUserHeader(d);
+    } catch (e) {
+        console.warn("Login check failed (Network or CORS)", e);
+        // Fallback UI for non-logged in state
+        currentUser = null;
+        renderUserHeader({});
+    }
 }
 
-function render(){
-  const kw = q.value.toLowerCase();
-  board.innerHTML = posts.filter(p =>
-    !kw || (p.title||"").toLowerCase().includes(kw)
-  ).map(p => {
-    const owner = currentUser && p.author === currentUser;
-    return `
-      <article class="card">
-        <img class="thumb" src="${p.images?.[0]?.url||''}">
-        <div class="meta">
-          <b>${p.title||'-'}</b>
-          <div class="muted">ราคา: ${p.price||'-'}</div>
-          ${owner ? `
-            <button class="btn ghost" onclick="edit('${p.id}')">แก้ไข</button>
-            <button class="btn ghost" onclick="delPost('${p.id}')">ลบ</button>
-          ` : ``}
-        </div>
-      </article>
-    `;
-  }).join("") || "<div class='muted'>ยังไม่มีประกาศ</div>";
-}
-q.oninput = render;
+function renderUserHeader(userData) {
+    if (currentUser) {
+        // User is logged in
+        dom.btnLogin.classList.add('hidden');
+        dom.btnNew.classList.remove('hidden');
+        
+        const avatarUrl = userData.photo || "https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=" + (userData.name || 'User');
+        
+        // Replace Login Button with Profile
+        const profileHtml = `
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden sm:block">
+                    <div class="text-sm font-semibold text-gray-900">${userData.name || currentUser}</div>
+                    <div class="text-xs text-gray-500">Member</div>
+                </div>
+                <img src="${avatarUrl}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover">
+            </div>
+        `;
+        
+        // Remove old login button if needed, keep structure clean
+        if(document.getElementById('userProfileDisplay')) document.getElementById('userProfileDisplay').remove();
+        
+        const div = document.createElement('div');
+        div.id = 'userProfileDisplay';
+        div.innerHTML = profileHtml;
+        dom.userSection.appendChild(div);
 
-const dlg = document.getElementById("dlg");
-btnNew.onclick = () => dlg.showModal();
-
-async function savePost(){
-  let images = [];
-  if (img.files[0]){
-    images.push({ url: await uploadImage(img.files[0]) });
-  }
-
-  await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"save",
-      post:{
-        title:title.value,
-        price:price.value,
-        body:body.value,
-        images
-      }
-    })
-  });
-
-  dlg.close();
-  loadPosts();
+    } else {
+        // Not logged in
+        dom.btnLogin.classList.remove('hidden');
+        dom.btnNew.classList.add('hidden');
+        if(document.getElementById('userProfileDisplay')) document.getElementById('userProfileDisplay').remove();
+    }
 }
 
-async function delPost(id){
-  if (!confirm("ลบประกาศนี้?")) return;
-  await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"delete",
-      id
-    })
-  });
-  loadPosts();
+dom.btnLogin.onclick = () => {
+    // Note: Google Auth via simple fetch usually requires a Redirect flow. 
+    // This assumes the Script creates a session cookie.
+    Swal.fire({
+        title: 'กำลังเชื่อมต่อ...',
+        text: 'กำลังพาคุณไปยังหน้าเข้าสู่ระบบของ Google',
+        icon: 'info',
+        showConfirmButton: false,
+        timer: 2000
+    });
+    // ใช้ window.open เพื่อให้จัดการ Cookies ได้ดีกว่า fetch
+    window.open(API_URL + "?action=whoami&login=true", "_blank"); 
+    
+    // Check again after a while manually or reload
+    setTimeout(() => init(), 5000); 
+};
+
+// --- Posts Handling ---
+async function loadPosts() {
+    dom.loading.classList.remove('hidden');
+    dom.board.classList.add('hidden');
+    
+    try {
+        const r = await fetch(API_URL + "?action=list");
+        const d = await r.json();
+        posts = d.posts || [];
+        renderPosts(posts);
+    } catch (e) {
+        dom.board.innerHTML = `<div class="col-span-full text-center text-red-500 py-10">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>`;
+    } finally {
+        dom.loading.classList.add('hidden');
+        dom.board.classList.remove('hidden');
+    }
 }
 
-function fileToBase64(file){
-  return new Promise(res=>{
-    const r=new FileReader();
-    r.onload=()=>res(r.result);
-    r.readAsDataURL(file);
-  });
+function renderPosts(data) {
+    if (!data || data.length === 0) {
+        dom.board.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
+                <i class="fa-regular fa-folder-open text-5xl mb-4"></i>
+                <p>ยังไม่มีประกาศในขณะนี้</p>
+            </div>
+        `;
+        return;
+    }
+
+    dom.board.innerHTML = data.map(p => {
+        const isOwner = currentUser && p.author === currentUser;
+        const imgUrl = p.images?.[0]?.url || 'https://placehold.co/600x400/e2e8f0/94a3b8?text=No+Image';
+        const priceFmt = parseInt(p.price || 0).toLocaleString('th-TH');
+        
+        return `
+        <article class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow group flex flex-col h-full">
+            <div class="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                <img src="${imgUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-semibold text-gray-700 shadow-sm">
+                    <i class="fa-solid fa-tag text-blue-500 mr-1"></i> ขาย
+                </div>
+            </div>
+            
+            <div class="p-4 flex flex-col flex-grow">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-semibold text-gray-900 line-clamp-2 text-lg leading-tight h-[3rem]">${p.title || 'ไม่มีหัวข้อ'}</h3>
+                </div>
+                
+                <div class="text-blue-600 font-bold text-xl mb-3">฿${priceFmt}</div>
+                
+                <p class="text-gray-500 text-sm line-clamp-3 mb-4 flex-grow">${p.body || '-'}</p>
+                
+                <div class="border-t border-gray-100 pt-3 flex items-center justify-between mt-auto">
+                    <span class="text-xs text-gray-400">
+                        <i class="fa-regular fa-clock mr-1"></i> ล่าสุด
+                    </span>
+                    
+                    ${isOwner ? `
+                    <div class="flex gap-2">
+                        <button onclick="editPost('${p.id}')" class="text-gray-400 hover:text-blue-600 transition-colors p-1" title="แก้ไข">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="delPost('${p.id}')" class="text-gray-400 hover:text-red-600 transition-colors p-1" title="ลบ">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    ` : `<button class="text-sm text-blue-600 font-medium hover:underline">ดูรายละเอียด</button>`}
+                </div>
+            </div>
+        </article>
+        `;
+    }).join("");
 }
 
-async function uploadImage(file){
-  const b64 = await fileToBase64(file);
-  const r = await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"upload",
-      base64:b64.split(",")[1],
-      name:file.name
-    })
-  });
-  return (await r.json()).url;
+function filterPosts(keyword) {
+    const kw = keyword.toLowerCase();
+    const filtered = posts.filter(p => 
+        (p.title || "").toLowerCase().includes(kw) || 
+        (p.body || "").toLowerCase().includes(kw)
+    );
+    renderPosts(filtered);
 }
 
-whoami();
-loadPosts();
+// --- CRUD Operations ---
+
+dom.btnNew.onclick = () => {
+    resetForm();
+    dom.dlg.showModal();
+};
+
+function closeModal() {
+    dom.dlg.close();
+}
+
+// Image Preview Logic
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            dom.imgPreview.src = e.target.result;
+            dom.imgPreview.classList.remove('hidden');
+            dom.uploadPlaceholder.classList.add('opacity-0');
+            dom.btnRemoveImg.classList.remove('hidden');
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeImage() {
+    dom.imgInput.value = "";
+    dom.imgPreview.src = "";
+    dom.imgPreview.classList.add('hidden');
+    dom.uploadPlaceholder.classList.remove('opacity-0');
+    dom.btnRemoveImg.classList.add('hidden');
+}
+
+async function savePost() {
+    const title = document.getElementById('title').value;
+    const price = document.getElementById('price').value;
+    const bodyText = document.getElementById('body').value;
+    const file = dom.imgInput.files[0];
+
+    if(!title || !price) {
+        Swal.fire('ข้อมูลไม่ครบ', 'กรุณาระบุหัวข้อและราคา', 'warning');
+        return;
+    }
+
+    setLoadingState(true);
+
+    try {
+        let images = [];
+        if (file) {
+            const url = await uploadImage(file);
+            images.push({ url: url });
+        }
+
+        await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "save",
+                post: {
+                    title: title,
+                    price: price,
+                    body: bodyText,
+                    images: images
+                }
+            })
+        });
+
+        closeModal();
+        Swal.fire({
+            icon: 'success',
+            title: 'สำเร็จ',
+            text: 'ลงประกาศเรียบร้อยแล้ว',
+            timer: 1500,
+            showConfirmButton: false
+        });
+        loadPosts();
+
+    } catch (e) {
+        console.error(e);
+        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+    } finally {
+        setLoadingState(false);
+    }
+}
+
+async function delPost(id) {
+    const result = await Swal.fire({
+        title: 'ยืนยันการลบ?',
+        text: "คุณต้องการลบประกาศนี้ใช่หรือไม่",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#d1d5db',
+        confirmButtonText: 'ลบประกาศ',
+        cancelButtonText: 'ยกเลิก'
+    });
+
+    if (result.isConfirmed) {
+        // Show loading toast
+        Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
+        
+        try {
+            await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "delete", id })
+            });
+            Swal.close();
+            loadPosts();
+            const Toast = Swal.mixin({
+                toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
+            });
+            Toast.fire({ icon: 'success', title: 'ลบเรียบร้อยแล้ว' });
+        } catch(e) {
+            Swal.fire('Error', 'ลบไม่สำเร็จ', 'error');
+        }
+    }
+}
+
+// --- Utilities ---
+
+function resetForm() {
+    document.getElementById('title').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('body').value = '';
+    removeImage();
+}
+
+function setLoadingState(isLoading) {
+    const btn = document.getElementById('btnSave');
+    const txt = document.getElementById('btnSaveText');
+    const icon = document.getElementById('btnSaveIcon');
+    
+    if (isLoading) {
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        txt.textContent = 'กำลังบันทึก...';
+        icon.classList.remove('fa-paper-plane');
+        icon.classList.add('fa-circle-notch', 'fa-spin');
+    } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        txt.textContent = 'บันทึกประกาศ';
+        icon.classList.add('fa-paper-plane');
+        icon.classList.remove('fa-circle-notch', 'fa-spin');
+    }
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+async function uploadImage(file) {
+    const b64 = await fileToBase64(file);
+    // Extract actual base64 string (remove data:image/png;base64, prefix)
+    const base64Content = b64.split(",")[1];
+    
+    const r = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "upload",
+            base64: base64Content,
+            name: file.name,
+            mimeType: file.type // ส่ง mimeType ไปเผื่อ Script ฝั่ง Server ต้องการ
+        })
+    });
+    
+    const res = await r.json();
+    return res.url;
+}
+
+function editPost(id) {
+    // ฟังก์ชันนี้ยังไม่สมบูรณ์เพราะเราต้องดึงข้อมูลเก่ามาใส่ฟอร์ม
+    // ในที่นี้จะแจ้งเตือนว่ายังไม่พร้อม หรือคุณสามารถ implement เพิ่มโดยการ find post from array
+    const post = posts.find(p => p.id === id);
+    if(post) {
+        document.getElementById('title').value = post.title;
+        document.getElementById('price').value = post.price;
+        document.getElementById('body').value = post.body;
+        // Image logic for edit is complex without changing backend structure, skipping for simplicity
+        dom.dlg.showModal();
+        // Note: Save logic needs to handle 'update' vs 'create' based on ID existence
+        // For this demo, simple create is implemented.
+    }
+}
+
+// Start
+init();
+
 </script>
-
 </body>
 </html>

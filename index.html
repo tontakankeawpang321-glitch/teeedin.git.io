@@ -138,7 +138,7 @@
 
 <footer class="bg-white border-t border-green-100 mt-auto py-8 text-center text-black text-sm">
     <div class="mb-2"><i class="fa-solid fa-seedling text-2xl text-emerald-300"></i></div>
-    &copy; 2025 crowstudio
+    &copy; 2024 LandMarket Platform
 </footer>
 
 <!-- Custom Image Slider Overlay -->
@@ -235,11 +235,18 @@
         </div>
 
         <div class="border border-green-200 rounded-xl p-1.5 bg-green-50/30">
-            <label class="block text-xs font-bold text-black mb-1.5 ml-1 flex items-center gap-1"><i class="fa-solid fa-location-dot text-red-500"></i> ปักหมุด (ลากเพื่อแก้ไข)</label>
+            <label class="block text-xs font-bold text-black mb-1.5 ml-1 flex items-center gap-1"><i class="fa-solid fa-location-dot text-red-500"></i> ปักหมุด (ค้นหา หรือ ลากเพื่อแก้ไข)</label>
+            
+            <!-- Search Bar for Map -->
+            <div class="flex gap-1 mb-1.5 px-1">
+                <input id="mapSearchInput" type="text" placeholder="พิมพ์ชื่อตำบล, อำเภอ หรือจังหวัด..." class="flex-grow px-2 py-1.5 border border-green-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-400 bg-white text-black" onkeypress="if(event.key==='Enter'){event.preventDefault();searchLocation();}">
+                <button type="button" onclick="searchLocation()" class="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-xs hover:bg-emerald-600 transition-colors shadow-sm whitespace-nowrap"><i class="fa-solid fa-search"></i> ค้นหา</button>
+            </div>
+
             <div id="map" class="shadow-inner border border-green-100 rounded-lg"></div>
-            <div class="flex justify-between items-center mt-2 px-1">
-                <button type="button" onclick="getCurrentLocation()" class="text-[10px] sm:text-xs text-black hover:text-emerald-800 hover:underline flex items-center gap-1"><i class="fa-solid fa-crosshairs"></i> ตำแหน่งปัจจุบัน</button>
-                <span id="latlng_display" class="text-[10px] text-black font-mono">ยังไม่ระบุ</span>
+            
+            <div class="flex justify-end items-center mt-1 px-1">
+                <span id="latlng_display" class="text-[10px] text-gray-500 font-mono">ยังไม่ระบุพิกัด</span>
             </div>
         </div>
 
@@ -368,20 +375,45 @@ function updateFormCoords(lat, lng) {
     dom.latlng_display.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 }
 
-function getCurrentLocation() {
-    if (navigator.geolocation) {
-        dom.latlng_display.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังหาพิกัด...';
-        navigator.geolocation.getCurrentPosition(
-            p => { updateMarker(p.coords.latitude, p.coords.longitude); map.setView([p.coords.latitude, p.coords.longitude], 15); },
-            () => { alert('ไม่สามารถระบุตำแหน่งได้'); dom.latlng_display.textContent = 'ระบุตำแหน่งล้มเหลว'; }
-        );
-    } else alert("Browser ไม่รองรับ Geolocation");
+async function searchLocation() {
+    const query = document.getElementById('mapSearchInput').value;
+    if (!query) return;
+    
+    // Simple UI feedback
+    const btn = document.querySelector('button[onclick="searchLocation()"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lon = parseFloat(data[0].lon);
+            updateMarker(lat, lon);
+            map.setView([lat, lon], 13);
+        } else {
+            // Toast or simple alert
+            const temp = dom.latlng_display.textContent;
+            dom.latlng_display.textContent = "ไม่พบสถานที่";
+            dom.latlng_display.classList.add("text-red-500");
+            setTimeout(() => {
+                dom.latlng_display.textContent = temp;
+                dom.latlng_display.classList.remove("text-red-500");
+            }, 2000);
+        }
+    } catch (e) {
+        console.error(e);
+    } finally {
+        btn.innerHTML = originalText;
+    }
 }
 
 function resetMap() {
     if(marker) map.removeLayer(marker); marker = null;
     dom.lat.value = ""; dom.lng.value = ""; dom.latlng_display.textContent = "ยังไม่ระบุพิกัด";
     map.setView([13.7563, 100.5018], 10);
+    document.getElementById('mapSearchInput').value = ""; // Clear search
     setTimeout(() => map.invalidateSize(), 200);
 }
 

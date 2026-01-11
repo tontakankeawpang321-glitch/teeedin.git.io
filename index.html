@@ -15,9 +15,25 @@
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #f1f1f1; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    dialog { transition: all 0.3s allow-discrete; opacity: 0; transform: scale(0.95); }
-    dialog[open] { opacity: 1; transform: scale(1); }
+    
+    /* Dialog Animation */
+    dialog { 
+        transition: opacity 0.3s ease-out, transform 0.3s ease-out, display 0.3s allow-discrete, overlay 0.3s allow-discrete; 
+        opacity: 0; 
+        transform: scale(0.95); 
+    }
+    dialog[open] { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
+    @starting-style {
+        dialog[open] {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+    }
     dialog::backdrop { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
+    
     .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 </style>
@@ -26,7 +42,7 @@
 
 <nav class="bg-white shadow-sm sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center gap-4">
-      <div class="flex items-center gap-2 cursor-pointer flex-shrink-0" onclick="window.location.reload()">
+      <div class="flex items-center gap-2 cursor-pointer flex-shrink-0" onclick="refreshApp()">
         <div class="bg-blue-600 text-white p-2 rounded-lg"><i class="fa-solid fa-map-location-dot text-xl"></i></div>
         <span class="font-bold text-xl text-blue-900 hidden sm:block">Land<span class="text-blue-600">Market</span></span>
       </div>
@@ -43,7 +59,7 @@
          </div>
       </div>
       
-      <!-- Mobile Menu Button (Optional, keeping layout simple) -->
+      <!-- Mobile Menu Button -->
       <div class="md:hidden flex gap-2">
          <button onclick="openNewPostModal()" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"><i class="fa-solid fa-plus"></i></button>
       </div>
@@ -81,7 +97,7 @@
 
 <!-- Modal Form -->
 <dialog id="dlg" class="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-lg backdrop:bg-gray-900/50">
-    <div class="p-6 border-b flex justify-between items-center"><h3 id="dlgTitle" class="text-lg font-bold">ลงประกาศ</h3><button onclick="closeModal()" class="text-gray-400 hover:bg-gray-100 w-8 h-8 rounded-full"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="p-6 border-b flex justify-between items-center"><h3 id="dlgTitle" class="text-lg font-bold">ลงประกาศ</h3><button onclick="closeModal()" class="text-gray-400 hover:bg-gray-100 w-8 h-8 rounded-full transition-colors"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
         <input type="hidden" id="postId">
         
@@ -116,14 +132,14 @@
         </div>
     </div>
     <div class="p-6 border-t bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
-        <button onclick="closeModal()" class="px-5 py-2 border rounded-lg hover:bg-white text-sm font-medium">ยกเลิก</button>
-        <button onclick="savePost()" id="btnSave" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium shadow-sm"><span id="btnSaveText">บันทึกข้อมูล</span> <i id="btnSaveIcon" class="fa-solid fa-paper-plane"></i></button>
+        <button onclick="closeModal()" class="px-5 py-2 border rounded-lg hover:bg-white text-sm font-medium transition-colors">ยกเลิก</button>
+        <button onclick="savePost()" id="btnSave" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium shadow-sm transition-colors"><span id="btnSaveText">บันทึกข้อมูล</span> <i id="btnSaveIcon" class="fa-solid fa-paper-plane"></i></button>
     </div>
 </dialog>
 
 <script>
 // --- CONFIGURATION ---
-// ⚠️ เปลี่ยน URL ด้านล่างเป็น Web App URL ของคุณ
+// ⚠️ Using the Google Script URL provided. Ensure this deployment ID is correct and you have permission.
 const API_URL = "https://script.google.com/macros/s/AKfycbwNEEYc_rGc15L4gpBi02IfDHqoXgZlJb6JJVUFPaLVGt18ukGWFCoPrZSvl09MvRa-Kw/exec";
 
 // --- DATA: Thai Provinces ---
@@ -160,6 +176,15 @@ function init() {
     }));
 }
 
+function refreshApp() {
+    // Soft reload
+    dom.searchDesktop.value = '';
+    dom.searchMobile.value = '';
+    dom.filterDesktop.value = 'all';
+    dom.filterMobile.value = 'all';
+    loadPosts();
+}
+
 function populateProvinces() {
     const options = PROVINCES.map(p => `<option value="${p}">${p}</option>`).join('');
     dom.province.innerHTML = `<option value="">เลือกจังหวัด</option>${options}`;
@@ -171,6 +196,8 @@ function populateProvinces() {
 async function sendToGoogle(payload) {
     return fetch(API_URL, {
         method: 'POST',
+        // mode: 'no-cors' is typically used for submitting forms to GScript, 
+        // but here we expect JSON response, so we need CORS to be enabled on the GScript side.
         body: JSON.stringify(payload)
     }).then(res => res.json());
 }
@@ -184,7 +211,7 @@ async function loadPosts() {
         renderPosts(posts);
         dom.loading.classList.add('hidden'); dom.board.classList.remove('hidden');
     } catch (err) {
-        dom.loading.innerHTML = `<p class="text-red-500">เกิดข้อผิดพลาด: ${err.message}</p>`;
+        dom.loading.innerHTML = `<div class="text-center"><p class="text-red-500 mb-2">เกิดข้อผิดพลาดในการโหลดข้อมูล</p><p class="text-xs text-gray-400">${err.message}</p></div>`;
     }
 }
 
@@ -194,7 +221,6 @@ function renderPosts(data) {
     dom.board.innerHTML = data.map(p => {
         const img = p.images?.[0] || 'https://placehold.co/600x400/f3f4f6/cbd5e1?text=No+Image';
         const price = parseInt(p.price||0).toLocaleString();
-        const provinceTag = p.province ? `<span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded ml-2"><i class="fa-solid fa-location-dot mr-1"></i>${p.province}</span>` : '';
         
         return `
         <article class="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col h-full relative">
@@ -248,9 +274,12 @@ function editPost(id) {
     dom.body.value = p.body;
     dom.province.value = p.province || ""; // Load province
     
-    // Extract other fields if embedded in body (Optional backward compatibility)
-    // For new posts, these should be separate, but let's keep it simple
-    
+    // Extract other fields if they were concatenated into body (simple heuristic if stored separately)
+    // Note: This logic depends on how your backend returns the data. 
+    // If backend returns 'address' and 'contactName' separately, map them here.
+    if(p.address) dom.address.value = p.address;
+    if(p.contactName) dom.contactName.value = p.contactName;
+
     if(p.images?.[0]) { 
         dom.imgPreview.src = p.images[0]; 
         dom.imgPreview.classList.remove('hidden'); 
@@ -268,17 +297,16 @@ async function savePost() {
     
     setLoading(true);
     
-    // Combine extra fields into body for display (optional, depending on how you want to store)
+    // Construct Body
+    // NOTE: You might want to store contact/address in separate fields in your GScript if possible.
+    // Here we preserve the original logic of sending everything.
     let fullBody = dom.body.value;
-    if(dom.address.value) fullBody = `📍 พิกัด: ${dom.address.value}\n` + fullBody;
-    if(dom.contactName.value) fullBody = `👤 ติดต่อ: ${dom.contactName.value}\n` + fullBody;
 
     try {
         let imgUrl = null;
         // Upload Logic
         if (dom.imgInput.files[0]) {
              const b64 = await getBase64(dom.imgInput.files[0]);
-             // backend will handle lh3 conversion
              const upRes = await sendToGoogle({ action:'upload', base64: b64.split(',')[1], name: dom.imgInput.files[0].name });
              if(upRes.error) throw new Error(upRes.error);
              imgUrl = upRes.url; 
@@ -294,7 +322,10 @@ async function savePost() {
                 title: dom.title.value, 
                 price: dom.price.value, 
                 body: fullBody, 
-                province: dom.province.value, // Send Province
+                province: dom.province.value,
+                // If your backend supports these fields separately:
+                address: dom.address.value,
+                contactName: dom.contactName.value,
                 images: imgUrl ? [imgUrl]:[] 
             }
         });
@@ -375,4 +406,3 @@ init();
 </script>
 </body>
 </html>
-

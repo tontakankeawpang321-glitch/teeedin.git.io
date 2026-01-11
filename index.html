@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>ตลาดซื้อขายที่ดิน | Land Market</title>
+<title>ตลาดซื้อขายที่ดิน | Land Market (Online)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -115,22 +115,21 @@
     <div class="flex justify-between items-end mb-6 px-2 sm:px-0">
         <div>
             <h1 class="text-xl sm:text-2xl font-bold text-black flex items-center gap-2"><i class="fa-solid fa-location-dot text-emerald-500"></i> ประกาศขายที่ดิน</h1>
-            <p class="text-black text-xs sm:text-sm mt-1">แหล่งรวมที่ดินทำเลทองทั่วไทย</p>
+            <p class="text-black text-xs sm:text-sm mt-1">แหล่งรวมที่ดินทำเลทองทั่วไทย (เชื่อมต่อ Google Sheet)</p>
         </div>
         <button onclick="openNewPostModal()" class="hidden md:flex bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-200 items-center gap-2 active:scale-95 transition-all font-medium"><i class="fa-solid fa-plus"></i> ลงประกาศฟรี</button>
     </div>
     
-    <div id="loading" class="flex flex-col items-center justify-center py-20 text-black">
+    <div id="loading" class="flex flex-col items-center justify-center py-20 text-black hidden">
         <i class="fa-solid fa-circle-notch fa-spin text-4xl text-emerald-500 mb-4"></i>
         <p class="text-black">กำลังโหลดข้อมูล...</p>
-        <p class="text-xs text-gray-400 mt-2">หากค้างนาน กรุณาตรวจสอบ API URL</p>
     </div>
     
     <!-- GRID LAYOUT -->
-    <section id="board" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 hidden pb-6"></section>
+    <section id="board" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 pb-6"></section>
 
     <!-- Pagination Controls -->
-    <div id="pagination" class="flex justify-center items-center gap-3 pb-10 hidden">
+    <div id="pagination" class="flex justify-center items-center gap-3 pb-10">
         <button onclick="changePage(-1)" id="btnPrev" class="px-4 py-1.5 bg-white border border-green-200 rounded-full text-xs sm:text-sm text-black hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-colors font-medium"><i class="fa-solid fa-chevron-left mr-1"></i> ก่อนหน้า</button>
         <span id="pageIndicator" class="text-xs sm:text-sm text-black font-bold bg-white px-4 py-1.5 rounded-full border border-green-200 shadow-sm">1 / 1</span>
         <button onclick="changePage(1)" id="btnNext" class="px-4 py-1.5 bg-white border border-green-200 rounded-full text-xs sm:text-sm text-black hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-colors font-medium">ถัดไป <i class="fa-solid fa-chevron-right ml-1"></i></button>
@@ -139,7 +138,7 @@
 
 <footer class="bg-white border-t border-green-100 mt-auto py-8 text-center text-black text-sm">
     <div class="mb-2"><i class="fa-solid fa-seedling text-2xl text-emerald-300"></i></div>
-    &copy; 2025 LandMarket Platform
+    &copy; 2024 LandMarket Platform
 </footer>
 
 <!-- Custom Image Slider Overlay -->
@@ -203,6 +202,9 @@
         <div id="viewMapContainer" class="hidden">
              <div class="flex flex-col gap-1 mb-2">
                  <h4 class="text-sm font-bold text-black flex items-center gap-2"><i class="fa-solid fa-map text-emerald-500 text-xs"></i> แผนที่</h4>
+                 <div class="flex items-center gap-2">
+                    <a id="viewLocationUrl" href="#" target="_blank" class="text-[10px] text-blue-500 hover:underline truncate max-w-[200px] hidden"><i class="fa-solid fa-link"></i> ลิงก์แผนที่</a>
+                 </div>
              </div>
              <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 relative h-[250px]">
                 <div id="viewMap" class="h-full w-full"></div>
@@ -273,7 +275,7 @@
         
         <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
             <div class="flex justify-between items-center mb-2">
-                <label class="block text-xs font-bold text-black">รูปภาพ (สูงสุด 3 รูป)</label>
+                <label class="block text-xs font-bold text-black">รูปภาพ</label>
                 <span id="imgCount" class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">0/3</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
@@ -284,7 +286,6 @@
                     <input id="img" type="file" class="hidden" accept="image/*" multiple onchange="appendImages(this)">
                 </label>
             </div>
-            <p class="text-[10px] text-gray-400 mt-2">* คลิกที่รูปกากบาทสีแดงเพื่อลบรูปที่ไม่ต้องการ</p>
         </div>
     </div>
     
@@ -295,19 +296,15 @@
 </dialog>
 
 <script>
-// --- CONFIGURATION ---
-// IMPORTANT: แทนที่ URL นี้ด้วย Web App URL ของคุณเองที่ได้จากการ Deploy Google Apps Script
-// ถ้ายังไม่มี ให้ใช้ค่าว่างหรือ mock data จะทำงานแทน
-const API_URL = "https://script.google.com/macros/s/AKfycbxFPLZc1F9OAG0W9KJtv7MRVb8sqOU8YX5dUrIyyKYPJHXytEpHbWGtY7qlIJ02xyP6Rg/exec"; 
-
-// --- DATA & MOCK DATA ---
+// --- CONFIGURATION & DATA ---
+const API_URL = "https://script.google.com/macros/s/AKfycbxFPLZc1F9OAG0W9KJtv7MRVb8sqOU8YX5dUrIyyKYPJHXytEpHbWGtY7qlIJ02xyP6Rg/exec";
 const PROVINCES = ["กรุงเทพมหานคร", "กระบี่", "กาญจนบุรี", "กาฬสินธุ์", "กำแพงเพชร", "ขอนแก่น", "จันทบุรี", "ฉะเชิงเทรา", "ชลบุรี", "ชัยนาท", "ชัยภูมิ", "ชุมพร", "เชียงราย", "เชียงใหม่", "ตรัง", "ตราด", "ตาก", "นครนายก", "นครปฐม", "นครพนม", "นครราชสีมา", "นครศรีธรรมราช", "นครสวรรค์", "นนทบุรี", "นราธิวาส", "น่าน", "บึงกาฬ", "บุรีรัมย์", "ปทุมธานี", "ประจวบคีรีขันธ์", "ปราจีนบุรี", "ปัตตานี", "พระนครศรีอยุธยา", "พะเยา", "พังงา", "พัทลุง", "พิจิตร", "พิษณุโลก", "เพชรบุรี", "เพชรบูรณ์", "แพร่", "ภูเก็ต", "มหาสารคาม", "มุกดาหาร", "แม่ฮ่องสอน", "ยโสธร", "ยะลา", "ร้อยเอ็ด", "ระนอง", "ระยอง", "ราชบุรี", "ลพบุรี", "ลำปาง", "ลำพูน", "เลย", "ศรีสะเกษ", "สกลนคร", "สงขลา", "สตูล", "สมุทรปราการ", "สมุทรสงคราม", "สมุทรสาคร", "สระแก้ว", "สระบุรี", "สิงห์บุรี", "สุโขทัย", "สุพรรณบุรี", "สุราษฎร์ธานี", "สุรินทร์", "หนองคาย", "หนองบัวลำภู", "อ่างทอง", "อำนาจเจริญ", "อุดรธานี", "อุตรดิตถ์", "อุทัยธานี", "อุบลราชธานี"].sort();
 
-// Mock data เพื่อให้เห็นผลลัพธ์ทันที (ลดเหลือ 1 รายการ)
-const mockPosts = [
+// Mock Data (Fallback)
+const defaultPosts = [
     {
         id: 101,
-        title: "ขายที่ดินเชียงใหม่ วิวดอยสุเทพ (ตัวอย่าง)",
+        title: "ขายที่ดินเชียงใหม่ วิวดอยสุเทพ (Demo)",
         price: 2500000,
         province: "เชียงใหม่",
         address: "อ.แม่ริม",
@@ -323,15 +320,14 @@ const mockPosts = [
 let posts = [];
 let filteredPosts = [];
 let currentPage = 1;
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 12;
 
-// Store image objects with unique ID to handle deletion correctly
-// Structure: { id: timestamp, file: File, base64: string }
-let formImages = []; 
+let formImages = [];
 let sliderImages = [];
 let sliderIndex = 0;
 let map, marker;
 let viewMap, viewMarker;
+let reopenViewOnSliderClose = false;
 
 const dom = {
     loading: document.getElementById('loading'), board: document.getElementById('board'),
@@ -353,22 +349,19 @@ const dom = {
     searchDesktop: document.getElementById('q_desktop'), searchMobile: document.getElementById('q_mobile'),
     slider: document.getElementById('imageSlider'), sliderImg: document.getElementById('sliderMainImage'),
     sliderCounter: document.getElementById('sliderCounter'),
-    // View Dialog Elements
-    viewTitle: document.getElementById('viewTitle'),
-    viewPrice: document.getElementById('viewPrice'),
-    viewContact: document.getElementById('viewContact'),
-    viewLocation: document.getElementById('viewLocation'),
-    viewBody: document.getElementById('viewBody'),
-    viewMapContainer: document.getElementById('viewMapContainer'),
-    viewImages: document.getElementById('viewImages'),
-    viewDeleteBtn: document.getElementById('btnDeletePost')
+    viewTitle: document.getElementById('viewTitle'), viewPrice: document.getElementById('viewPrice'),
+    viewContact: document.getElementById('viewContact'), viewLocation: document.getElementById('viewLocation'),
+    viewBody: document.getElementById('viewBody'), viewMapContainer: document.getElementById('viewMapContainer'),
+    viewImages: document.getElementById('viewImages'), viewDeleteBtn: document.getElementById('btnDeletePost')
 };
 
 // --- INIT ---
 function init() {
     populateProvinces();
-    loadPosts();
+    loadPosts(); // Load from API
     initMap();
+    
+    // Event Listeners
     [dom.searchDesktop, dom.searchMobile].forEach(el => el.addEventListener('input', debounce(applyFilters, 300)));
     [dom.filterDesktop, dom.filterMobile].forEach(el => el.addEventListener('change', (e) => {
         dom.filterDesktop.value = e.target.value; dom.filterMobile.value = e.target.value; applyFilters();
@@ -388,28 +381,25 @@ function populateProvinces() {
     dom.filterMobile.innerHTML = `<option value="all">ทุกจังหวัด</option>${options}`;
 }
 
-// --- DATA LOADING ---
+// --- API LOADING ---
 async function loadPosts() {
     dom.loading.classList.remove('hidden');
     dom.board.classList.add('hidden');
     dom.pagination.classList.add('hidden');
 
     try {
-        if (!API_URL) throw new Error("No API URL");
-        
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { redirect: "follow" });
         if (!response.ok) throw new Error('Network response was not ok');
         
         const data = await response.json();
         
-        // Handle different response structures
+        // Parse data from Google Sheets
         let rawData = [];
         if (Array.isArray(data)) rawData = data;
         else if (data.data && Array.isArray(data.data)) rawData = data.data;
-        else throw new Error("Invalid data format");
-
+        
         posts = rawData.map(item => ({
-            id: item.id,
+            id: item.id || Date.now() + Math.random(),
             title: item.title || 'ไม่มีหัวข้อ',
             price: Number(item.price) || 0,
             province: item.province || 'ไม่ระบุ',
@@ -422,17 +412,13 @@ async function loadPosts() {
         }));
         
     } catch (error) {
-        console.warn('Using Mock Data:', error);
-        posts = [...mockPosts];
-        
-        if (API_URL) {
-             Swal.fire({
-                icon: 'warning',
-                title: 'เชื่อมต่อล้มเหลว',
-                text: 'กำลังแสดงข้อมูลตัวอย่างแทน',
-                toast: true, position: 'top-end', timer: 3000, showConfirmButton: false
-            });
-        }
+        console.error('API Error:', error);
+        posts = [...defaultPosts];
+        Swal.fire({
+             toast: true, position: 'top-end', icon: 'warning', 
+             title: 'ไม่สามารถเชื่อมต่อ Google Sheet ได้', text: 'แสดงข้อมูลตัวอย่างแทน',
+             showConfirmButton: false, timer: 3000
+        });
     } finally {
         applyFilters();
         dom.loading.classList.add('hidden');
@@ -441,18 +427,15 @@ async function loadPosts() {
     }
 }
 
-// Helper to handle image parsing
 function parseImages(imgData) {
     if (!imgData) return [];
     if (Array.isArray(imgData)) return imgData;
     if (typeof imgData === 'string') {
         try {
-            // Try parsing JSON string e.g. "['url1', 'url2']"
             const parsed = JSON.parse(imgData);
             if (Array.isArray(parsed)) return parsed;
             return [imgData];
         } catch (e) {
-            // If comma separated
             if (imgData.includes(',')) return imgData.split(',').map(s => s.trim());
             return [imgData];
         }
@@ -489,21 +472,21 @@ function renderBoard() {
         const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://placehold.co/400x300?text=No+Image';
         
         const card = document.createElement('div');
-        card.className = "bg-white rounded-xl shadow-sm border border-green-50 hover:shadow-md transition-shadow overflow-hidden cursor-pointer flex flex-col h-full";
-        // Click on card opens detail
+        card.className = "bg-white rounded-lg sm:rounded-xl shadow-sm border border-green-50 hover:shadow-md transition-shadow overflow-hidden cursor-pointer flex flex-col h-full";
         card.onclick = () => viewPost(p.id);
         
         card.innerHTML = `
-            <div class="h-40 bg-gray-200 relative overflow-hidden">
-                <img src="${imgUrl}" class="w-full h-full object-cover transition-transform hover:scale-105 duration-500">
-                <div class="absolute top-2 right-2 bg-white/90 px-2 py-0.5 rounded-lg text-[10px] font-bold text-emerald-600 shadow-sm border border-green-100">${p.province}</div>
+            <div class="h-28 sm:h-32 md:h-40 bg-gray-200 relative overflow-hidden group">
+                <img src="${imgUrl}" class="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500">
+                <div class="absolute top-1 right-1 sm:top-2 sm:right-2 bg-white/90 px-1.5 py-0.5 sm:px-2 rounded sm:rounded-lg text-[10px] sm:text-[10px] font-bold text-emerald-600 shadow-sm border border-green-100 truncate max-w-[80px] sm:max-w-none">${p.province}</div>
             </div>
-            <div class="p-3 flex flex-col flex-grow">
-                <h3 class="font-bold text-black text-sm line-clamp-2 mb-1 leading-snug">${p.title}</h3>
-                <p class="text-xs text-gray-500 mb-2 flex items-center gap-1"><i class="fa-solid fa-location-dot text-gray-300"></i> ${p.address || p.province}</p>
-                <div class="mt-auto flex justify-between items-center border-t border-gray-100 pt-2">
-                    <span class="text-emerald-600 font-bold text-base">฿${parseInt(p.price).toLocaleString()}</span>
-                    <button class="text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded-full border border-green-100 hover:bg-green-100">ดูรายละเอียด</button>
+            <div class="p-2 sm:p-3 flex flex-col flex-grow">
+                <h3 class="font-bold text-black text-xs sm:text-sm line-clamp-2 mb-1 leading-snug h-8 sm:h-10">${p.title}</h3>
+                <p class="text-[10px] sm:text-xs text-gray-500 mb-1 sm:mb-2 flex items-center gap-1"><i class="fa-solid fa-location-dot text-gray-300"></i> <span class="truncate">${p.address || p.province}</span></p>
+                <div class="mt-auto flex justify-between items-center border-t border-gray-100 pt-1 sm:pt-2">
+                    <span class="text-emerald-600 font-bold text-xs sm:text-base">฿${formatPriceCompact(p.price)}</span>
+                    <i class="fa-solid fa-circle-arrow-right text-green-400 text-xs sm:hidden"></i>
+                    <button class="hidden sm:block text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded-full border border-green-100 hover:bg-green-100">ดูรายละเอียด</button>
                 </div>
             </div>
         `;
@@ -511,6 +494,12 @@ function renderBoard() {
     });
     
     updatePagination();
+}
+
+function formatPriceCompact(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(0) + 'k';
+    return num.toLocaleString();
 }
 
 function updatePagination() {
@@ -537,7 +526,6 @@ function debounce(func, wait) {
 
 // --- MAP FUNCTIONS ---
 function initMap() {
-    // Map สำหรับหน้าแก้ไข/สร้าง
     map = L.map('map').setView([13.7563, 100.5018], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
     map.on('click', e => updateMarker(e.latlng.lat, e.latlng.lng));
@@ -574,9 +562,8 @@ async function searchLocation() {
             const lat = parseFloat(data[0].lat);
             const lon = parseFloat(data[0].lon);
             updateMarker(lat, lon);
-            map.setView([lat, lon], 13);
         } else {
-            alert("ไม่พบสถานที่");
+            Swal.fire({icon: 'info', title: 'ไม่พบสถานที่', text: 'ลองระบุจังหวัดหรืออำเภอให้ชัดเจนขึ้น', timer: 2000, showConfirmButton: false});
         }
     } catch (e) {
         console.error(e);
@@ -585,339 +572,112 @@ async function searchLocation() {
     }
 }
 
-// --- VIEW POST DETAILS & MAP ---
-function viewPost(id) {
-    const post = posts.find(p => p.id == id);
-    if (!post) return;
-
-    // 1. Fill Text Data
-    dom.viewTitle.textContent = post.title;
-    dom.viewPrice.textContent = `฿${parseInt(post.price).toLocaleString()}`;
-    dom.viewContact.textContent = post.contact_name || '-';
-    dom.viewLocation.textContent = `${post.address ? post.address + ' ' : ''}${post.province}`;
-    dom.viewBody.textContent = post.body || '-';
-    
-    // Set Delete Action
-    dom.viewDeleteBtn.onclick = () => confirmDelete(id);
-
-    // 2. Images
-    dom.viewImages.innerHTML = '';
-    if (post.images && post.images.length > 0) {
-        post.images.forEach(url => {
-            const img = document.createElement('img');
-            img.src = url;
-            img.className = "h-20 w-auto rounded-lg border border-gray-200 flex-shrink-0 cursor-pointer hover:opacity-80 object-cover";
-            img.onclick = () => openImageSlider([url], 0); 
-            dom.viewImages.appendChild(img);
-        });
-    } else {
-        dom.viewImages.innerHTML = '<span class="text-xs text-gray-400">ไม่มีรูปภาพ</span>';
-    }
-
-    // 3. Map Logic (OpenStreetMap)
-    if (post.lat && post.lng) {
-        dom.viewMapContainer.classList.remove('hidden');
-        
-        // Update External Link
-        document.getElementById('viewMapLink').href = `https://www.openstreetmap.org/?mlat=${post.lat}&mlon=${post.lng}#map=16/${post.lat}/${post.lng}`;
-
-        // Initialize or Update Leaflet Map
-        if (!viewMap) {
-            viewMap = L.map('viewMap', {
-                zoomControl: true,
-                dragging: true,
-                scrollWheelZoom: false 
-            }).setView([post.lat, post.lng], 14);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(viewMap);
-            
-            viewMarker = L.marker([post.lat, post.lng]).addTo(viewMap);
-        } else {
-            viewMap.setView([post.lat, post.lng], 14);
-            if (viewMarker) viewMap.removeLayer(viewMarker);
-            viewMarker = L.marker([post.lat, post.lng]).addTo(viewMap);
-        }
-
-        // CRITICAL FIX: Leaflet needs to know the container size changed because it was hidden
-        setTimeout(() => {
-            viewMap.invalidateSize();
-        }, 200);
-
-    } else {
-        dom.viewMapContainer.classList.add('hidden');
-    }
-
-    dom.viewDlg.showModal();
-}
-
-function closeViewModal() {
-    if(dom.viewDlg.open) {
-        dom.viewDlg.close();
-    }
-}
-
-// --- DELETE FUNCTION ---
-function confirmDelete(id) {
-    // Close the details view FIRST
-    closeViewModal();
-
-    Swal.fire({
-        title: 'ยืนยันการลบ?',
-        text: "คุณต้องการลบประกาศนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถเรียกคืนได้",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#e5e7eb',
-        confirmButtonText: '<i class="fa-solid fa-trash-can"></i> ใช่, ลบเลย',
-        cancelButtonText: 'ยกเลิก',
-        customClass: {
-            confirmButton: 'rounded-xl text-sm font-bold shadow-md',
-            cancelButton: 'rounded-xl text-sm text-gray-700 font-bold hover:bg-gray-200'
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            deletePost(id);
-        }
-    });
-}
-
-function deletePost(id) {
-    Swal.fire({
-        title: 'กำลังลบ...',
-        didOpen: () => Swal.showLoading(),
-        allowOutsideClick: false
-    });
-
-    const payload = { action: 'delete', id: id };
-
-    // ถ้าไม่มี API URL ให้ลบแค่ในหน้าจอ (Mock mode)
-    if (!API_URL) {
-        setTimeout(() => {
-            posts = posts.filter(p => p.id != id);
-            applyFilters();
-            Swal.fire('ลบสำเร็จ (Demo)', 'ข้อมูลถูกลบออกจากหน้าจอแล้ว', 'success');
-        }, 800);
-        return;
-    }
-
-    fetch(API_URL, {
-        method: 'POST',
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-    })
-    .then(response => response.json())
-    .then(data => {
-        // DELETE SUCCESS
-        posts = posts.filter(p => p.id != id);
-        applyFilters(); // Re-render grid
-
-        Swal.fire({
-            icon: 'success',
-            title: 'ลบสำเร็จ',
-            timer: 1500,
-            showConfirmButton: false
-        });
-        
-        // Reload data from server
-        loadPosts();
-    })
-    .catch(error => {
-        console.error('Delete error:', error);
-        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบข้อมูลได้', 'error');
-    });
-}
-
-// --- CREATE / EDIT POST ---
+// --- MODAL FUNCTIONS ---
 function openNewPostModal() {
-    // Reset form
+    resetForm();
+    dom.dlg.showModal();
+    setTimeout(() => map.invalidateSize(), 200);
+}
+
+function closeModal() {
+    dom.dlg.close();
+    resetForm();
+}
+
+function resetForm() {
     dom.postId.value = '';
     dom.title.value = '';
     dom.price.value = '';
     dom.contactName.value = '';
     dom.address.value = '';
-    dom.province.value = '';
     dom.body.value = '';
+    dom.province.value = '';
+    dom.imgInput.value = '';
     dom.lat.value = '';
     dom.lng.value = '';
     dom.latlng_display.textContent = 'ยังไม่ระบุพิกัด';
     dom.latlng_display.classList.remove('text-emerald-600', 'font-bold');
     
-    // Reset Images
     formImages = [];
-    renderImagePreviews();
-    
-    // Reset Map
-    if (marker) map.removeLayer(marker);
-    marker = null;
-    map.setView([13.7563, 100.5018], 10);
-    setTimeout(() => map.invalidateSize(), 200);
-    
-    dom.dlg.showModal();
-}
-
-function closeModal() {
-    dom.dlg.close();
-}
-
-function savePost() {
-    // Validate
-    if (!dom.title.value || !dom.price.value || !dom.province.value) {
-        if(!dom.title.value) dom.title.classList.add('input-error');
-        if(!dom.price.value) dom.price.classList.add('input-error');
-        if(!dom.province.value) dom.province.classList.add('input-error');
-        setTimeout(() => {
-            dom.title.classList.remove('input-error');
-            dom.price.classList.remove('input-error');
-            dom.province.classList.remove('input-error');
-        }, 300);
-        return;
-    }
-
-    const btn = document.getElementById('btnSave');
-    const txt = document.getElementById('btnSaveText');
-    const icon = document.getElementById('btnSaveIcon');
-    
-    const originalText = txt.textContent;
-    btn.disabled = true;
-    txt.textContent = 'กำลังบันทึก...';
-    icon.className = 'fa-solid fa-circle-notch fa-spin';
-
-    // Collect base64 images from our tracked array
-    const imagePayload = formImages.map(obj => obj.base64);
-
-    // Prepare Payload
-    const postData = {
-        action: 'add',
-        id: Date.now(), // Generate ID
-        title: dom.title.value,
-        price: dom.price.value,
-        province: dom.province.value,
-        address: dom.address.value,
-        contact_name: dom.contactName.value,
-        body: dom.body.value,
-        images: imagePayload,
-        lat: dom.lat.value,
-        lng: dom.lng.value
-    };
-
-    if (!API_URL) {
-        // Mock Save
-        setTimeout(() => {
-            posts.unshift(postData);
-            closeModal();
-            Swal.fire('บันทึกสำเร็จ (Demo)', '', 'success');
-            applyFilters();
-            btn.disabled = false;
-            txt.textContent = originalText;
-            icon.className = 'fa-solid fa-check';
-        }, 1000);
-        return;
-    }
-
-    // Send to Google Apps Script
-    fetch(API_URL, {
-        method: 'POST',
-        headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(postData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        closeModal();
-        Swal.fire({
-            icon: 'success',
-            title: 'บันทึกสำเร็จ',
-            text: 'ประกาศของคุณออนไลน์แล้ว',
-            timer: 1500,
-            showConfirmButton: false
-        });
-        
-        loadPosts();
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
-    })
-    .finally(() => {
-        btn.disabled = false;
-        txt.textContent = originalText;
-        icon.className = 'fa-solid fa-check';
-    });
-}
-
-// --- FILL DEMO DATA ---
-function fillDemoData() {
-    dom.title.value = "ขายที่ดินสวนผลไม้ 10 ไร่";
-    dom.price.value = "3500000";
-    dom.province.value = "ระยอง";
-    dom.address.value = "อ.แกลง";
-    dom.contactName.value = "คุณสมบัติ ใจดี";
-    dom.body.value = "ที่ดินสวนผสม ทุเรียน มังคุด พร้อมบ้านพัก 1 หลัง น้ำไฟสะดวก ติดถนนลาดยาง บรรยากาศดีมาก";
-    
-    // Set Map
-    const demoLat = 12.78;
-    const demoLng = 101.65;
-    updateMarker(demoLat, demoLng);
-    map.setView([demoLat, demoLng], 12);
-}
-
-// --- IMAGE HANDLING (FIXED DELETION) ---
-function appendImages(input) {
-    if (input.files && input.files.length > 0) {
-        Array.from(input.files).forEach(file => {
-            if (formImages.length >= 3) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // สร้าง Unique ID สำหรับรูปนี้ เพื่อให้ลบได้ถูกต้อง
-                const imgId = Date.now() + Math.random().toString(36).substr(2, 9);
-                
-                formImages.push({
-                    id: imgId,
-                    base64: e.target.result
-                });
-                renderImagePreviews();
-            };
-            reader.readAsDataURL(file);
-        });
-        input.value = ''; 
-    }
-}
-
-function removeImage(id) {
-    // ลบโดยใช้ ID ที่ระบุเจาะจง ไม่ใช่ลบตัวสุดท้าย
-    formImages = formImages.filter(img => img.id !== id);
-    renderImagePreviews();
-}
-
-function renderImagePreviews() {
     dom.previewList.innerHTML = '';
+    dom.imgCount.textContent = '0/3';
     
-    formImages.forEach((imgObj) => {
-        const div = document.createElement('div');
-        div.className = "aspect-square rounded-xl overflow-hidden relative border border-gray-200 group";
-        div.innerHTML = `
-            <img src="${imgObj.base64}" class="w-full h-full object-cover">
-            <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-100 shadow-sm transition-opacity" onclick="removeImage('${imgObj.id}')">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        `;
-        dom.previewList.appendChild(div);
-    });
+    if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+    }
+    map.setView([13.7563, 100.5018], 10);
+}
 
-    dom.imgCount.textContent = `${formImages.length}/3`;
-    if (formImages.length >= 3) dom.uploadBtn.classList.add('hidden');
-    else dom.uploadBtn.classList.remove('hidden');
+// --- VIEW DETAILS FUNCTIONS ---
+function viewPost(id) {
+    const post = posts.find(p => p.id === id);
+    if (!post) return;
+    
+    dom.viewTitle.textContent = post.title;
+    dom.viewPrice.textContent = '฿' + parseInt(post.price).toLocaleString();
+    dom.viewContact.textContent = post.contact_name || '-';
+    dom.viewLocation.textContent = (post.address ? post.address + ' ' : '') + post.province;
+    dom.viewBody.textContent = post.body || '-';
+    
+    // Images
+    dom.viewImages.innerHTML = '';
+    if (post.images && post.images.length > 0) {
+        sliderImages = post.images;
+        post.images.forEach((url, idx) => {
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = "h-40 w-auto rounded-lg object-cover cursor-pointer border border-green-100 hover:opacity-90";
+            img.onclick = () => openImageSlider(idx);
+            dom.viewImages.appendChild(img);
+        });
+    } else {
+        dom.viewImages.innerHTML = '<div class="h-40 w-full bg-green-50 rounded-lg flex items-center justify-center text-gray-400 text-xs">ไม่มีรูปภาพ</div>';
+    }
+    
+    // Map in View
+    if (post.lat && post.lng) {
+        dom.viewMapContainer.classList.remove('hidden');
+        if (!viewMap) {
+            viewMap = L.map('viewMap');
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(viewMap);
+        }
+        
+        setTimeout(() => {
+            viewMap.invalidateSize();
+            viewMap.setView([post.lat, post.lng], 13);
+            if (viewMarker) viewMap.removeLayer(viewMarker);
+            viewMarker = L.marker([post.lat, post.lng]).addTo(viewMap);
+        }, 200);
+        
+        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${post.lat},${post.lng}`;
+        document.getElementById('viewMapLink').href = mapUrl;
+        document.getElementById('viewLocationUrl').href = mapUrl;
+        document.getElementById('viewLocationUrl').classList.remove('hidden');
+    } else {
+        dom.viewMapContainer.classList.add('hidden');
+    }
+    
+    dom.viewDeleteBtn.onclick = () => deletePost(post.id);
+    dom.viewDlg.showModal();
+}
+
+function closeViewModal() {
+    dom.viewDlg.close();
+    reopenViewOnSliderClose = false;
 }
 
 // --- IMAGE SLIDER ---
-function openImageSlider(images, idx) {
-    sliderImages = images;
-    sliderIndex = idx;
-    updateSlider();
+function openImageSlider(index) {
+    sliderIndex = index;
+    updateSliderImage();
+    
+    // Close view dialog if open
+    if (dom.viewDlg.open) {
+        dom.viewDlg.close();
+        reopenViewOnSliderClose = true;
+    }
+    
     dom.slider.classList.remove('hidden');
     setTimeout(() => {
         dom.slider.classList.remove('slider-hidden');
@@ -928,24 +688,212 @@ function openImageSlider(images, idx) {
 function closeImageSlider() {
     dom.slider.classList.remove('slider-visible');
     dom.slider.classList.add('slider-hidden');
-    setTimeout(() => dom.slider.classList.add('hidden'), 300);
+    setTimeout(() => {
+        dom.slider.classList.add('hidden');
+        // Reopen view dialog if it was closed by slider
+        if (reopenViewOnSliderClose) {
+            dom.viewDlg.showModal();
+            reopenViewOnSliderClose = false;
+        }
+    }, 300);
 }
 
-function changeSlide(dir) {
-    sliderIndex += dir;
-    if (sliderIndex < 0) sliderIndex = sliderImages.length - 1;
-    if (sliderIndex >= sliderImages.length) sliderIndex = 0;
-    updateSlider();
+function changeSlide(step) {
+    if (sliderImages.length === 0) return;
+    sliderIndex = (sliderIndex + step + sliderImages.length) % sliderImages.length;
+    updateSliderImage();
 }
 
-function updateSlider() {
+function updateSliderImage() {
     dom.sliderImg.src = sliderImages[sliderIndex];
     dom.sliderCounter.textContent = `${sliderIndex + 1} / ${sliderImages.length}`;
 }
 
-// Start
-init();
+// --- IMAGE UPLOAD LOGIC ---
+function appendImages(input) {
+    if (input.files) {
+        const remaining = 3 - formImages.length;
+        const filesToProcess = Array.from(input.files).slice(0, remaining);
+        
+        filesToProcess.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                formImages.push(e.target.result); // Base64
+                renderFormImages();
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+}
 
+function renderFormImages() {
+    dom.previewList.innerHTML = '';
+    formImages.forEach((src, idx) => {
+        const div = document.createElement('div');
+        div.className = "relative aspect-square rounded-xl overflow-hidden group";
+        div.innerHTML = `
+            <img src="${src}" class="w-full h-full object-cover">
+            <button onclick="removeImage(${idx})" class="absolute top-1 right-1 bg-red-500 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-times"></i></button>
+        `;
+        dom.previewList.appendChild(div);
+    });
+    
+    dom.imgCount.textContent = `${formImages.length}/3`;
+    if (formImages.length >= 3) dom.uploadBtn.classList.add('hidden');
+    else dom.uploadBtn.classList.remove('hidden');
+}
+
+function removeImage(idx) {
+    formImages.splice(idx, 1);
+    renderFormImages();
+}
+
+// --- SAVE / DELETE (API CONNECTED) ---
+function validateForm() {
+    let isValid = true;
+    if (!dom.title.value.trim()) { dom.title.classList.add('input-error'); isValid = false; }
+    else dom.title.classList.remove('input-error');
+    
+    if (!dom.price.value) { dom.price.classList.add('input-error'); isValid = false; }
+    else dom.price.classList.remove('input-error');
+    
+    if (!dom.province.value) { dom.province.classList.add('input-error'); isValid = false; }
+    else dom.province.classList.remove('input-error');
+    
+    return isValid;
+}
+
+async function savePost() {
+    if (!validateForm()) {
+        setTimeout(() => document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error')), 500);
+        return;
+    }
+
+    const btn = document.getElementById('btnSave');
+    const txt = document.getElementById('btnSaveText');
+    const icon = document.getElementById('btnSaveIcon');
+    
+    const originalText = txt.textContent;
+    txt.textContent = 'กำลังบันทึก...';
+    icon.className = 'fa-solid fa-circle-notch fa-spin';
+    btn.disabled = true;
+
+    // Prepare FormData
+    const formData = new FormData();
+    formData.append('action', 'create');
+    formData.append('title', dom.title.value);
+    formData.append('price', dom.price.value);
+    formData.append('province', dom.province.value);
+    formData.append('address', dom.address.value);
+    formData.append('contact_name', dom.contactName.value);
+    formData.append('body', dom.body.value);
+    formData.append('lat', dom.lat.value);
+    formData.append('lng', dom.lng.value);
+    
+    // Handle Images: Send as JSON string (Base64)
+    // Warning: Google Sheet cells have a 50k char limit. Large images may fail.
+    const processedImages = formImages.map(img => img); 
+    formData.append('images', JSON.stringify(processedImages));
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: formData
+        });
+        
+        // Optimistic UI Update (Update Local State Immediately)
+        const newPost = {
+            id: Date.now(), 
+            title: dom.title.value,
+            price: Number(dom.price.value),
+            province: dom.province.value,
+            address: dom.address.value,
+            contact_name: dom.contactName.value,
+            body: dom.body.value,
+            lat: dom.lat.value ? parseFloat(dom.lat.value) : null,
+            lng: dom.lng.value ? parseFloat(dom.lng.value) : null,
+            images: processedImages
+        };
+
+        posts.unshift(newPost);
+        applyFilters();
+
+        Swal.fire({
+            icon: 'success',
+            title: 'บันทึกสำเร็จ',
+            text: 'ข้อมูลถูกส่งไปยัง Google Sheet แล้ว',
+            timer: 2000,
+            showConfirmButton: false
+        });
+        
+        closeModal();
+
+    } catch (e) {
+        console.error(e);
+        Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ Server', 'error');
+    } finally {
+        txt.textContent = originalText;
+        icon.className = 'fa-solid fa-check';
+        btn.disabled = false;
+    }
+}
+
+function deletePost(id) {
+    // ปิด dialog แรกทันทีที่กดลบ
+    closeViewModal();
+    
+    Swal.fire({
+        title: 'ยืนยันการลบ?',
+        text: "คุณต้องการลบประกาศนี้ใช่หรือไม่",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'ลบประกาศ',
+        cancelButtonText: 'ยกเลิก',
+        showLoaderOnConfirm: true,
+        preConfirm: async () => {
+             try {
+                 const fd = new FormData();
+                 fd.append('action', 'delete');
+                 fd.append('id', id);
+                 const res = await fetch(API_URL, { method: 'POST', body: fd });
+                 if (!res.ok) throw new Error(res.statusText);
+                 return true;
+             } catch (error) {
+                 Swal.showValidationMessage(`เกิดข้อผิดพลาด: ${error}`);
+             }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            posts = posts.filter(p => p.id !== id);
+            applyFilters();
+            Swal.fire('ลบสำเร็จ', 'ประกาศถูกลบเรียบร้อยแล้ว', 'success');
+        } else {
+             // ถ้ากดยกเลิก ไม่ต้องเปิด modal กลับมา (ตาม flow การลบ) หรือจะเปิดก็ได้ถ้าต้องการ
+             // ในที่นี้เลือกที่จะไม่เปิดกลับมาตามที่ตกลงไว้
+        }
+    });
+}
+
+function fillDemoData() {
+    dom.title.value = "ที่ดินแปลงสวย ติดแม่น้ำแควน้อย (Online Demo)";
+    dom.price.value = "4500000";
+    dom.province.value = "กาญจนบุรี";
+    dom.address.value = "อ.ไทรโยค";
+    dom.contactName.value = "คุณวิชัย";
+    dom.body.value = "ที่ดินแปลงสวย ถมแล้ว ติดแม่น้ำ บรรยากาศดีมาก เหมาะทำรีสอร์ท\n- หน้ากว้างติดน้ำ 40 เมตร\n- ไฟฟ้าเข้าถึง";
+    
+    const lat = 14.1200 + (Math.random() * 0.05);
+    const lng = 99.1500 + (Math.random() * 0.05);
+    updateMarker(lat, lng);
+    
+    // Use URL for demo to save space in Sheet
+    formImages = ["https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"];
+    renderFormImages();
+}
+
+// Start App
+init();
 </script>
 </body>
 </html>

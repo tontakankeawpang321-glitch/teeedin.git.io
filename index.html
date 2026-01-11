@@ -195,11 +195,17 @@
         </div>
 
         <div id="viewMapContainer" class="hidden">
-             <h4 class="text-sm font-bold text-black mb-2 flex items-center gap-2"><i class="fa-solid fa-map text-emerald-500 text-xs"></i> แผนที่</h4>
-             <div class="rounded-xl overflow-hidden shadow-md border border-gray-200">
+             <div class="flex flex-col gap-1 mb-2">
+                 <h4 class="text-sm font-bold text-black flex items-center gap-2"><i class="fa-solid fa-map text-emerald-500 text-xs"></i> พิกัดแผนที่ (OpenStreetMap)</h4>
+                 <div class="flex items-center gap-2">
+                    <span id="viewCoords" class="text-[10px] text-emerald-600 font-mono bg-emerald-50 px-1.5 rounded border border-emerald-100"></span>
+                    <a id="viewLocationUrl" href="#" target="_blank" class="text-[10px] text-blue-500 hover:underline truncate max-w-[200px] hidden"><i class="fa-solid fa-link"></i> ลิงก์แผนที่</a>
+                 </div>
+             </div>
+             <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 relative">
                 <div id="viewMap"></div>
              </div>
-             <a id="viewMapLink" href="#" target="_blank" class="flex items-center justify-center gap-2 w-full mt-3 py-2 bg-emerald-50 text-emerald-800 rounded-lg text-sm hover:bg-emerald-100 transition-colors font-medium"><i class="fa-solid fa-location-arrow"></i> เปิดนำทาง (Google Maps)</a>
+             <a id="viewMapLink" href="#" target="_blank" class="flex items-center justify-center gap-2 w-full mt-3 py-2 bg-emerald-50 text-emerald-800 rounded-lg text-sm hover:bg-emerald-100 transition-colors font-medium"><i class="fa-solid fa-map-location-dot"></i> ดูบน OpenStreetMap</a>
         </div>
     </div>
 </dialog>
@@ -486,7 +492,15 @@ function renderPostsHTML(data) {
         const imagesStr = JSON.stringify(images).replace(/"/g, '&quot;');
         
         let navBtn = '';
-        if(p.lat && p.lng) navBtn = `<a href="https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}" target="_blank" class="text-green-500 hover:bg-green-50 p-1.5 rounded-full transition-colors" title="นำทาง" onclick="event.stopPropagation()"><i class="fa-solid fa-location-arrow"></i></a>`;
+        let mapIndicator = '';
+        
+        // Use OSM URL if available, else construct one
+        const mapUrl = p.locationUrl || (p.lat && p.lng ? `https://www.openstreetmap.org/?mlat=${p.lat}&mlon=${p.lng}&zoom=16` : '#');
+
+        if(p.lat && p.lng) {
+            navBtn = `<a href="${mapUrl}" target="_blank" class="text-green-500 hover:bg-green-50 p-1.5 rounded-full transition-colors" title="นำทาง" onclick="event.stopPropagation()"><i class="fa-solid fa-location-arrow"></i></a>`;
+            mapIndicator = `<span class="text-[9px] text-green-700 bg-green-100 px-1.5 py-0.5 rounded border border-green-200 flex items-center gap-1"><i class="fa-solid fa-map-pin text-[8px]"></i> มีพิกัด</span>`;
+        }
 
         const locationStr = [p.address, p.province].filter(Boolean).join(', ');
         
@@ -500,8 +514,9 @@ function renderPostsHTML(data) {
             <div class="p-2 sm:p-3 flex flex-col flex-grow">
                 <h3 class="font-bold text-black line-clamp-1 mb-1 text-xs sm:text-sm leading-tight group-hover:text-emerald-600 transition-colors" title="${p.title}">${p.title}</h3>
                 
-                <div class="mb-1 hidden sm:block">
-                     <div class="text-[10px] sm:text-xs text-black truncate"><i class="fa-solid fa-location-dot text-orange-400 w-3 text-center"></i> ${locationStr || '-'}</div>
+                <div class="mb-1 flex items-center justify-between">
+                     <div class="text-[10px] sm:text-xs text-black truncate max-w-[65%]"><i class="fa-solid fa-location-dot text-orange-400 w-3 text-center"></i> ${locationStr || '-'}</div>
+                     ${mapIndicator}
                 </div>
 
                 <div class="text-black text-[10px] sm:text-xs line-clamp-2 mb-2 flex-grow whitespace-pre-line bg-green-50/50 p-1.5 rounded-lg border border-green-50 leading-snug">${p.body || '-'}</div>
@@ -531,8 +546,22 @@ function viewPost(id) {
     document.getElementById('viewBody').textContent = p.body || '-';
     
     const mapContainer = document.getElementById('viewMapContainer');
+    const viewUrlEl = document.getElementById('viewLocationUrl');
+    
     if (p.lat && p.lng) {
         mapContainer.classList.remove('hidden');
+        document.getElementById('viewCoords').textContent = `${parseFloat(p.lat).toFixed(5)}, ${parseFloat(p.lng).toFixed(5)}`;
+        
+        // Save OSM URL logic
+        const osmUrl = p.locationUrl || `https://www.openstreetmap.org/?mlat=${p.lat}&mlon=${p.lng}&zoom=16`;
+        
+        if(osmUrl) {
+            viewUrlEl.href = osmUrl;
+            viewUrlEl.classList.remove('hidden');
+        } else {
+            viewUrlEl.classList.add('hidden');
+        }
+        
         if(!viewMap) initViewMap();
         
         const lat = parseFloat(p.lat);
@@ -541,12 +570,18 @@ function viewPost(id) {
         if(viewMarker) viewMap.removeLayer(viewMarker);
         viewMarker = L.marker([lat, lng]).addTo(viewMap);
         
-        document.getElementById('viewMapLink').href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+        // Link to OSM
+        document.getElementById('viewMapLink').href = osmUrl;
         
-        requestAnimationFrame(() => {
+        // Use setTimeout to wait for dialog animation to finish
+        setTimeout(() => {
              viewMap.invalidateSize();
-             viewMap.setView([lat, lng], 14);
-        });
+             viewMap.setView([lat, lng], 15); // Zoom level 15 is better for details
+             L.popup()
+                .setLatLng([lat, lng])
+                .setContent("ตำแหน่งที่ดิน")
+                .openOn(viewMap);
+        }, 300);
     } else {
         mapContainer.classList.add('hidden');
     }
@@ -692,7 +727,7 @@ async function savePost() {
     if (!dom.title.value) {
         dom.title.focus();
         dom.title.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        dom.title.classList.add('input-error'); // Trigger shake
+        dom.title.classList.add('input-error'); 
         setTimeout(() => dom.title.classList.remove('input-error'), 500);
         return;
     }
@@ -725,9 +760,27 @@ async function savePost() {
             }
         }
 
+        // Generate OpenStreetMap URL
+        let locationUrl = "";
+        if(dom.lat.value && dom.lng.value) {
+            locationUrl = `https://www.openstreetmap.org/?mlat=${dom.lat.value}&mlon=${dom.lng.value}&zoom=16`;
+        }
+
         const res = await sendToGoogle({
             action: 'save',
-            post: { id, title: dom.title.value, price: dom.price.value, body: dom.body.value, province: dom.province.value, address: dom.address.value, contactName: dom.contactName.value, images: finalImages, lat: dom.lat.value, lng: dom.lng.value }
+            post: { 
+                id, 
+                title: dom.title.value, 
+                price: dom.price.value, 
+                body: dom.body.value, 
+                province: dom.province.value, 
+                address: dom.address.value, 
+                contactName: dom.contactName.value, 
+                images: finalImages, 
+                lat: dom.lat.value, 
+                lng: dom.lng.value,
+                locationUrl: locationUrl 
+            }
         });
         if(res.error) throw new Error(res.error);
         closeModal(); 
@@ -738,12 +791,11 @@ async function savePost() {
 }
 
 async function delPost(id) {
-    const p = posts.find(x => x.id === id); // Get post data before deleting to access images
+    const p = posts.find(x => x.id === id); 
     const r = await Swal.fire({ title:'ยืนยันการลบ?', text: "ลบแล้วกู้คืนไม่ได้", icon: 'warning', showCancelButton:true, confirmButtonColor:'#ef4444', confirmButtonText:'ลบ', cancelButtonText:'ยกเลิก' });
     if(!r.isConfirmed) return;
     Swal.showLoading();
     try {
-        // Pass images array to the backend along with the ID
         const res = await sendToGoogle({ action:'delete', id, images: p ? p.images : [] });
         if(res.error) throw new Error(res.error);
         Swal.fire('ลบสำเร็จ','','success'); loadPosts();
@@ -765,4 +817,3 @@ init();
 </script>
 </body>
 </html>
-

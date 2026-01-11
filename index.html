@@ -196,16 +196,15 @@
 
         <div id="viewMapContainer" class="hidden">
              <div class="flex flex-col gap-1 mb-2">
-                 <h4 class="text-sm font-bold text-black flex items-center gap-2"><i class="fa-solid fa-map text-emerald-500 text-xs"></i> พิกัดแผนที่ (OpenStreetMap)</h4>
+                 <h4 class="text-sm font-bold text-black flex items-center gap-2"><i class="fa-solid fa-map text-emerald-500 text-xs"></i> แผนที่ (OpenStreetMap)</h4>
                  <div class="flex items-center gap-2">
                     <span id="viewCoords" class="text-[10px] text-emerald-600 font-mono bg-emerald-50 px-1.5 rounded border border-emerald-100"></span>
-                    <a id="viewLocationUrl" href="#" target="_blank" class="text-[10px] text-blue-500 hover:underline truncate max-w-[200px] hidden"><i class="fa-solid fa-link"></i> ลิงก์แผนที่</a>
                  </div>
              </div>
-             <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 relative">
-                <div id="viewMap"></div>
+             <div class="rounded-xl overflow-hidden shadow-md border border-gray-200 relative h-[250px]">
+                <div id="viewMap" class="h-full w-full"></div>
              </div>
-             <a id="viewMapLink" href="#" target="_blank" class="flex items-center justify-center gap-2 w-full mt-3 py-2 bg-emerald-50 text-emerald-800 rounded-lg text-sm hover:bg-emerald-100 transition-colors font-medium"><i class="fa-solid fa-map-location-dot"></i> ดูบน OpenStreetMap</a>
+             <a id="viewMapLink" href="#" target="_blank" class="flex items-center justify-center gap-2 w-full mt-3 py-2 bg-emerald-50 text-emerald-800 rounded-lg text-sm hover:bg-emerald-100 transition-colors font-medium border border-emerald-100 shadow-sm"><i class="fa-solid fa-earth-asia"></i> เปิดดูใน OpenStreetMap</a>
         </div>
     </div>
 </dialog>
@@ -487,18 +486,26 @@ function renderPostsHTML(data) {
     if (!data.length) return dom.board.innerHTML = `<div class="col-span-full text-center py-20 bg-white/50 rounded-xl border-2 border-dashed border-green-200"><i class="fa-solid fa-seedling text-4xl text-green-200 mb-2"></i><p class="text-black/50">ไม่พบข้อมูลประกาศ</p></div>`;
     
     dom.board.innerHTML = data.map(p => {
-        const images = (p.images && p.images.length > 0) ? p.images : ['https://placehold.co/600x400/f3f4f6/cbd5e1?text=No+Image'];
+        // --- FIX: Parse images if string ---
+        let images = p.images;
+        if (typeof images === 'string') {
+            try { images = JSON.parse(images); } catch(e) { images = []; }
+        }
+        if (!Array.isArray(images) || images.length === 0) images = ['https://placehold.co/600x400/f3f4f6/cbd5e1?text=No+Image'];
+        
         const price = parseInt(p.price||0).toLocaleString();
+        // Securely stringify for onclick
         const imagesStr = JSON.stringify(images).replace(/"/g, '&quot;');
         
         let navBtn = '';
         let mapIndicator = '';
         
-        // Use OSM URL if available, else construct one
+        // Use OSM URL based on lat/lng
         const mapUrl = p.locationUrl || (p.lat && p.lng ? `https://www.openstreetmap.org/?mlat=${p.lat}&mlon=${p.lng}&zoom=16` : '#');
 
         if(p.lat && p.lng) {
-            navBtn = `<a href="${mapUrl}" target="_blank" class="text-green-500 hover:bg-green-50 p-1.5 rounded-full transition-colors" title="นำทาง" onclick="event.stopPropagation()"><i class="fa-solid fa-location-arrow"></i></a>`;
+            // Changed icon to Globe/Map for OSM
+            navBtn = `<a href="${mapUrl}" target="_blank" class="text-green-500 hover:bg-green-50 p-1.5 rounded-full transition-colors" title="ดูแผนที่ OSM" onclick="event.stopPropagation()"><i class="fa-solid fa-earth-asia"></i></a>`;
             mapIndicator = `<span class="text-[9px] text-green-700 bg-green-100 px-1.5 py-0.5 rounded border border-green-200 flex items-center gap-1"><i class="fa-solid fa-map-pin text-[8px]"></i> มีพิกัด</span>`;
         }
 
@@ -507,7 +514,7 @@ function renderPostsHTML(data) {
         return `
         <article class="bg-white rounded-xl shadow-sm border border-green-50 overflow-hidden hover:shadow-xl hover:shadow-green-100 transition-all duration-300 group flex flex-col h-full relative">
             <div class="relative aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer" onclick="openImageSlider(${imagesStr})">
-                <img src="${images[0]}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
+                <img src="${images[0]}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.src='https://placehold.co/600x400?text=Error'">
                 <div class="absolute top-1 right-1 sm:top-2 sm:right-2 bg-white/95 backdrop-blur px-2 py-1 rounded-lg text-[10px] sm:text-xs font-bold text-black shadow-sm border border-green-100">฿${price}</div>
                 ${p.province ? `<div class="absolute bottom-1 left-1 bg-emerald-900/70 text-white px-2 py-0.5 rounded text-[9px] sm:text-[10px] backdrop-blur-sm truncate max-w-[80%] shadow-sm"><i class="fa-solid fa-map-pin text-[8px]"></i> ${p.province}</div>` : ''}
             </div>
@@ -546,21 +553,13 @@ function viewPost(id) {
     document.getElementById('viewBody').textContent = p.body || '-';
     
     const mapContainer = document.getElementById('viewMapContainer');
-    const viewUrlEl = document.getElementById('viewLocationUrl');
     
     if (p.lat && p.lng) {
         mapContainer.classList.remove('hidden');
         document.getElementById('viewCoords').textContent = `${parseFloat(p.lat).toFixed(5)}, ${parseFloat(p.lng).toFixed(5)}`;
         
-        // Save OSM URL logic
+        // Construct OSM URL
         const osmUrl = p.locationUrl || `https://www.openstreetmap.org/?mlat=${p.lat}&mlon=${p.lng}&zoom=16`;
-        
-        if(osmUrl) {
-            viewUrlEl.href = osmUrl;
-            viewUrlEl.classList.remove('hidden');
-        } else {
-            viewUrlEl.classList.add('hidden');
-        }
         
         if(!viewMap) initViewMap();
         
@@ -568,20 +567,17 @@ function viewPost(id) {
         const lng = parseFloat(p.lng);
         
         if(viewMarker) viewMap.removeLayer(viewMarker);
-        viewMarker = L.marker([lat, lng]).addTo(viewMap);
+        viewMarker = L.marker([lat, lng]).addTo(viewMap)
+            .bindPopup("<b>ตำแหน่งที่ดิน</b>").openPopup();
         
-        // Link to OSM
+        // Link Button to OSM
         document.getElementById('viewMapLink').href = osmUrl;
         
-        // Use setTimeout to wait for dialog animation to finish
+        // --- FIX: Ensure map renders correctly inside dialog ---
         setTimeout(() => {
              viewMap.invalidateSize();
-             viewMap.setView([lat, lng], 15); // Zoom level 15 is better for details
-             L.popup()
-                .setLatLng([lat, lng])
-                .setContent("ตำแหน่งที่ดิน")
-                .openOn(viewMap);
-        }, 300);
+             viewMap.setView([lat, lng], 15);
+        }, 300); // Slight delay for animation
     } else {
         mapContainer.classList.add('hidden');
     }
@@ -711,9 +707,13 @@ function editPost(id) {
         updateMarker(parseFloat(p.lat), parseFloat(p.lng));
         map.setView([p.lat, p.lng], 15);
     }
-    if(p.images && p.images.length > 0) {
-        formImages = p.images.map(url => ({ type: 'url', data: url }));
-        renderFormImages();
+    if(p.images) {
+        let imgs = p.images;
+        if(typeof imgs === 'string') try { imgs = JSON.parse(imgs); } catch(e){ imgs=[]; }
+        if(Array.isArray(imgs)) {
+             formImages = imgs.map(url => ({ type: 'url', data: url }));
+             renderFormImages();
+        }
     }
     document.getElementById('dlgTitle').textContent="แก้ไขประกาศ"; 
     dom.dlg.showModal();

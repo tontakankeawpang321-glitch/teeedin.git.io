@@ -58,6 +58,17 @@
     /* Leaflet Z-Index Fix */
     .leaflet-pane { z-index: 10 !important; }
     .leaflet-bottom { z-index: 20 !important; }
+    
+    /* Input Error Shake Animation */
+    .input-error {
+        animation: shake 0.3s ease-in-out;
+        border-color: #ef4444 !important;
+    }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
 </style>
 </head>
 <body class="text-black min-h-screen flex flex-col pb-safe">
@@ -644,7 +655,29 @@ function editPost(id) {
 
 async function savePost() {
     const id = dom.postId.value;
-    if(!dom.title.value || !dom.price.value || !dom.province.value) return Swal.fire('ข้อมูลไม่ครบ','กรุณาระบุ หัวข้อ, ราคา และจังหวัด','warning');
+    
+    // --- New Validation Logic: Scroll & Focus ---
+    if (!dom.title.value) {
+        dom.title.focus();
+        dom.title.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        dom.title.classList.add('input-error'); // Trigger shake
+        setTimeout(() => dom.title.classList.remove('input-error'), 500);
+        return;
+    }
+    if (!dom.province.value) {
+        dom.province.focus();
+        dom.province.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        dom.province.classList.add('input-error');
+        setTimeout(() => dom.province.classList.remove('input-error'), 500);
+        return;
+    }
+    if (!dom.price.value) {
+        dom.price.focus();
+        dom.price.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        dom.price.classList.add('input-error');
+        setTimeout(() => dom.price.classList.remove('input-error'), 500);
+        return;
+    }
     
     setLoading(true);
     let finalImages = [];

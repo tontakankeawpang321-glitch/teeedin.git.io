@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="utf-8">
@@ -10,65 +11,114 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-    body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #f1f1f1; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    dialog { transition: all 0.3s allow-discrete; opacity: 0; transform: scale(0.95); }
-    dialog[open] { opacity: 1; transform: scale(1); }
-    dialog::backdrop { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
-    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    dialog { transition: all 0.3s allow-discrete; opacity: 0; transform: scale(0.95); }
+    dialog[open] { opacity: 1; transform: scale(1); }
+    dialog::backdrop { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 </style>
 </head>
 <body class="text-gray-800 min-h-screen flex flex-col">
 
 <nav class="bg-white shadow-sm sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-      <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.reload()">
-        <div class="bg-blue-600 text-white p-2 rounded-lg"><i class="fa-solid fa-map-location-dot text-xl"></i></div>
-        <span class="font-bold text-xl text-blue-900">Land<span class="text-blue-600">Market</span></span>
-      </div>
-      <div class="hidden md:flex relative"><input id="q_desktop" type="text" placeholder="ค้นหา..." class="pl-10 pr-4 py-2 border rounded-full text-sm focus:ring-1 focus:ring-blue-500 w-64"><i class="fa-solid fa-search absolute left-3.5 top-3 text-gray-400"></i></div>
-  </div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center gap-4">
+      <div class="flex items-center gap-2 cursor-pointer flex-shrink-0" onclick="window.location.reload()">
+        <div class="bg-blue-600 text-white p-2 rounded-lg"><i class="fa-solid fa-map-location-dot text-xl"></i></div>
+        <span class="font-bold text-xl text-blue-900 hidden sm:block">Land<span class="text-blue-600">Market</span></span>
+      </div>
+      
+      <!-- Search & Filter Desktop -->
+      <div class="hidden md:flex flex-grow justify-end gap-2">
+         <select id="filter_province_desktop" class="border rounded-full px-4 py-2 text-sm focus:ring-1 focus:ring-blue-500 bg-gray-50 outline-none w-40 cursor-pointer">
+            <option value="all">ทุกจังหวัด</option>
+            <!-- Javascript will populate provinces here -->
+         </select>
+         <div class="relative">
+             <input id="q_desktop" type="text" placeholder="ค้นหาทำเล, รายละเอียด..." class="pl-10 pr-4 py-2 border rounded-full text-sm focus:ring-1 focus:ring-blue-500 w-64">
+             <i class="fa-solid fa-search absolute left-3.5 top-3 text-gray-400"></i>
+         </div>
+      </div>
+      
+      <!-- Mobile Menu Button (Optional, keeping layout simple) -->
+      <div class="md:hidden flex gap-2">
+         <button onclick="openNewPostModal()" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"><i class="fa-solid fa-plus"></i></button>
+      </div>
+  </div>
 </nav>
-<div class="md:hidden bg-white border-b p-3 sticky top-16 z-40"><div class="relative"><input id="q_mobile" type="text" placeholder="ค้นหา..." class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg text-sm"><i class="fa-solid fa-search absolute left-3.5 top-2.5 text-gray-500"></i></div></div>
+
+<!-- Mobile Filter & Search -->
+<div class="md:hidden bg-white border-b p-3 sticky top-16 z-40 space-y-2">
+    <div class="flex gap-2">
+        <select id="filter_province_mobile" class="border rounded-lg px-2 py-2 text-sm bg-gray-50 outline-none w-1/3">
+            <option value="all">ทุกจังหวัด</option>
+        </select>
+        <div class="relative w-2/3">
+            <input id="q_mobile" type="text" placeholder="ค้นหา..." class="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-lg text-sm outline-none">
+            <i class="fa-solid fa-search absolute left-3.5 top-2.5 text-gray-500"></i>
+        </div>
+    </div>
+</div>
 
 <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-    <div class="flex justify-between items-end mb-6">
-        <div><h1 class="text-2xl font-bold text-gray-900">ประกาศขายที่ดิน</h1><p class="text-gray-500 text-sm">แหล่งรวมที่ดินทำเลทองทั่วไทย</p></div>
-        <button onclick="openNewPostModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-md flex items-center gap-2 active:scale-95 transition-all"><i class="fa-solid fa-plus"></i> ลงประกาศ</button>
-    </div>
-    <div id="loading" class="flex flex-col items-center justify-center py-20 text-gray-400"><i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i><p>กำลังโหลดข้อมูล...</p></div>
-    <section id="board" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden"></section>
+    <div class="flex justify-between items-end mb-6">
+        <div><h1 class="text-2xl font-bold text-gray-900">ประกาศขายที่ดิน</h1><p class="text-gray-500 text-sm">แหล่งรวมที่ดินทำเลทองทั่วไทย</p></div>
+        <button onclick="openNewPostModal()" class="hidden md:flex bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg shadow-md items-center gap-2 active:scale-95 transition-all"><i class="fa-solid fa-plus"></i> ลงประกาศ</button>
+    </div>
+    
+    <div id="loading" class="flex flex-col items-center justify-center py-20 text-gray-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
+        <p>กำลังโหลดข้อมูล...</p>
+    </div>
+    
+    <section id="board" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden"></section>
 </main>
+
 <footer class="bg-white border-t mt-10 py-6 text-center text-gray-500 text-sm">&copy; 2024 LandMarket Platform</footer>
 
+<!-- Modal Form -->
 <dialog id="dlg" class="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-lg backdrop:bg-gray-900/50">
-    <div class="p-6 border-b flex justify-between items-center"><h3 id="dlgTitle" class="text-lg font-bold">ลงประกาศ</h3><button onclick="closeModal()" class="text-gray-400 hover:bg-gray-100 w-8 h-8 rounded-full"><i class="fa-solid fa-xmark"></i></button></div>
-    <div class="p-6 space-y-4">
-        <input type="hidden" id="postId">
-        <div><label class="block text-sm font-medium mb-1">หัวข้อประกาศ</label><input id="title" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
-        <div class="grid grid-cols-2 gap-4">
-            <div><label class="block text-sm font-medium mb-1">ผู้ติดต่อ</label><input id="contact_name" type="text" class="w-full px-4 py-2 border rounded-lg outline-none"></div>
-            <div><label class="block text-sm font-medium mb-1">ทำเล</label><input id="address" type="text" class="w-full px-4 py-2 border rounded-lg outline-none"></div>
-        </div>
-        <div><label class="block text-sm font-medium mb-1">ราคา (บาท)</label><input id="price" type="number" class="w-full px-4 py-2 border rounded-lg outline-none"></div>
-        <div><label class="block text-sm font-medium mb-1">รายละเอียด</label><textarea id="body" rows="3" class="w-full px-4 py-2 border rounded-lg outline-none resize-none"></textarea></div>
-        <div>
-            <label class="block text-sm font-medium mb-1">รูปภาพ</label>
-            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden">
-                <div id="uploadPlaceholder" class="text-gray-400 text-center"><i class="fa-solid fa-cloud-upload-alt text-2xl"></i><p class="text-xs mt-1">คลิกอัปโหลด</p></div>
-                <img id="imgPreview" class="absolute inset-0 w-full h-full object-cover hidden">
-                <input id="img" type="file" class="hidden" accept="image/*" onchange="previewImage(this)">
-            </label>
-            <button id="btnRemoveImg" onclick="removeImage()" class="hidden text-xs text-red-500 mt-1 hover:underline">ลบรูป</button>
-        </div>
-    </div>
-    <div class="p-6 border-t bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
-        <button onclick="closeModal()" class="px-5 py-2 border rounded-lg hover:bg-white">ยกเลิก</button>
-        <button onclick="savePost()" id="btnSave" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"><span id="btnSaveText">บันทึก</span> <i id="btnSaveIcon" class="fa-solid fa-paper-plane"></i></button>
-    </div>
+    <div class="p-6 border-b flex justify-between items-center"><h3 id="dlgTitle" class="text-lg font-bold">ลงประกาศ</h3><button onclick="closeModal()" class="text-gray-400 hover:bg-gray-100 w-8 h-8 rounded-full"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <input type="hidden" id="postId">
+        
+        <div><label class="block text-sm font-medium mb-1">หัวข้อประกาศ <span class="text-red-500">*</span></label><input id="title" type="text" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></div>
+        
+        <div class="grid grid-cols-2 gap-4">
+             <div>
+                <label class="block text-sm font-medium mb-1">จังหวัด <span class="text-red-500">*</span></label>
+                <select id="input_province" class="w-full px-4 py-2 border rounded-lg outline-none bg-white">
+                    <option value="">เลือกจังหวัด</option>
+                    <!-- Javascript will populate provinces here -->
+                </select>
+            </div>
+            <div><label class="block text-sm font-medium mb-1">ราคา (บาท) <span class="text-red-500">*</span></label><input id="price" type="number" class="w-full px-4 py-2 border rounded-lg outline-none"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="block text-sm font-medium mb-1">ผู้ติดต่อ</label><input id="contact_name" type="text" class="w-full px-4 py-2 border rounded-lg outline-none"></div>
+            <div><label class="block text-sm font-medium mb-1">เขต/อำเภอ</label><input id="address" type="text" class="w-full px-4 py-2 border rounded-lg outline-none"></div>
+        </div>
+
+        <div><label class="block text-sm font-medium mb-1">รายละเอียดเพิ่มเติม</label><textarea id="body" rows="3" class="w-full px-4 py-2 border rounded-lg outline-none resize-none"></textarea></div>
+        
+        <div>
+            <label class="block text-sm font-medium mb-1">รูปภาพ</label>
+            <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 relative overflow-hidden transition-colors">
+                <div id="uploadPlaceholder" class="text-gray-400 text-center"><i class="fa-solid fa-cloud-upload-alt text-3xl mb-2"></i><p class="text-xs">คลิกเพื่ออัปโหลดรูปภาพ</p></div>
+                <img id="imgPreview" class="absolute inset-0 w-full h-full object-contain bg-gray-200 hidden">
+                <input id="img" type="file" class="hidden" accept="image/*" onchange="previewImage(this)">
+            </label>
+            <button id="btnRemoveImg" onclick="removeImage()" class="hidden text-xs text-red-500 mt-2 hover:underline flex items-center gap-1"><i class="fa-solid fa-trash"></i> ลบรูปภาพ</button>
+        </div>
+    </div>
+    <div class="p-6 border-t bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
+        <button onclick="closeModal()" class="px-5 py-2 border rounded-lg hover:bg-white text-sm font-medium">ยกเลิก</button>
+        <button onclick="savePost()" id="btnSave" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium shadow-sm"><span id="btnSaveText">บันทึกข้อมูล</span> <i id="btnSaveIcon" class="fa-solid fa-paper-plane"></i></button>
+    </div>
 </dialog>
 
 <script>
@@ -76,134 +126,250 @@
 // ⚠️ เปลี่ยน URL ด้านล่างเป็น Web App URL ของคุณ
 const API_URL = "https://script.google.com/macros/s/AKfycbw7n5pZvmm6dgQ8OmCx_Mn6SrCK8hhTm8HWouekZpl643S7Twf6eCPunp9cMtkYWAdOJw/exec";
 
+// --- DATA: Thai Provinces ---
+const PROVINCES = [
+    "กรุงเทพมหานคร", "กระบี่", "กาญจนบุรี", "กาฬสินธุ์", "กำแพงเพชร", "ขอนแก่น", "จันทบุรี", "ฉะเชิงเทรา", "ชลบุรี", "ชัยนาท", "ชัยภูมิ", "ชุมพร", "เชียงราย", "เชียงใหม่", "ตรัง", "ตราด", "ตาก", "นครนายก", "นครปฐม", "นครพนม", "นครราชสีมา", "นครศรีธรรมราช", "นครสวรรค์", "นนทบุรี", "นราธิวาส", "น่าน", "บึงกาฬ", "บุรีรัมย์", "ปทุมธานี", "ประจวบคีรีขันธ์", "ปราจีนบุรี", "ปัตตานี", "พระนครศรีอยุธยา", "พะเยา", "พังงา", "พัทลุง", "พิจิตร", "พิษณุโลก", "เพชรบุรี", "เพชรบูรณ์", "แพร่", "ภูเก็ต", "มหาสารคาม", "มุกดาหาร", "แม่ฮ่องสอน", "ยโสธร", "ยะลา", "ร้อยเอ็ด", "ระนอง", "ระยอง", "ราชบุรี", "ลพบุรี", "ลำปาง", "ลำพูน", "เลย", "ศรีสะเกษ", "สกลนคร", "สงขลา", "สตูล", "สมุทรปราการ", "สมุทรสงคราม", "สมุทรสาคร", "สระแก้ว", "สระบุรี", "สิงห์บุรี", "สุโขทัย", "สุพรรณบุรี", "สุราษฎร์ธานี", "สุรินทร์", "หนองคาย", "หนองบัวลำภู", "อ่างทอง", "อำนาจเจริญ", "อุดรธานี", "อุตรดิตถ์", "อุทัยธานี", "อุบลราชธานี"
+].sort();
+
 // --- STATE & DOM ---
 let posts = [];
 const dom = {
-    loading: document.getElementById('loading'), board: document.getElementById('board'),
-    dlg: document.getElementById('dlg'), postId: document.getElementById('postId'),
-    title: document.getElementById('title'), price: document.getElementById('price'),
-    contactName: document.getElementById('contact_name'), address: document.getElementById('address'),
-    body: document.getElementById('body'), imgInput: document.getElementById('img'),
-    imgPreview: document.getElementById('imgPreview')
+    loading: document.getElementById('loading'), board: document.getElementById('board'),
+    dlg: document.getElementById('dlg'), postId: document.getElementById('postId'),
+    title: document.getElementById('title'), price: document.getElementById('price'),
+    contactName: document.getElementById('contact_name'), address: document.getElementById('address'),
+    province: document.getElementById('input_province'), // New field
+    body: document.getElementById('body'), imgInput: document.getElementById('img'),
+    imgPreview: document.getElementById('imgPreview'),
+    filterDesktop: document.getElementById('filter_province_desktop'),
+    filterMobile: document.getElementById('filter_province_mobile'),
+    searchDesktop: document.getElementById('q_desktop'),
+    searchMobile: document.getElementById('q_mobile')
 };
 
 function init() {
-    loadPosts();
-    ['q_desktop','q_mobile'].forEach(id => document.getElementById(id).addEventListener('input', (e) => filterPosts(e.target.value)));
+    populateProvinces();
+    loadPosts();
+    // Add event listeners for filters
+    [dom.searchDesktop, dom.searchMobile].forEach(el => el.addEventListener('input', applyFilters));
+    [dom.filterDesktop, dom.filterMobile].forEach(el => el.addEventListener('change', (e) => {
+        // Sync filters
+        dom.filterDesktop.value = e.target.value;
+        dom.filterMobile.value = e.target.value;
+        applyFilters();
+    }));
 }
 
-// --- API HANDLING (Crucial for External Access) ---
+function populateProvinces() {
+    const options = PROVINCES.map(p => `<option value="${p}">${p}</option>`).join('');
+    dom.province.innerHTML = `<option value="">เลือกจังหวัด</option>${options}`;
+    dom.filterDesktop.innerHTML = `<option value="all">ทุกจังหวัด</option>${options}`;
+    dom.filterMobile.innerHTML = `<option value="all">ทุกจังหวัด</option>${options}`;
+}
+
+// --- API HANDLING ---
 async function sendToGoogle(payload) {
-    // ส่งแบบ Plain Text เพื่อหลบ CORS Preflight
-    return fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-    }).then(res => res.json());
+    return fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }).then(res => res.json());
 }
 
 async function loadPosts() {
-    dom.loading.classList.remove('hidden'); dom.board.classList.add('hidden');
-    try {
-        const res = await fetch(API_URL + "?action=list");
-        const data = await res.json();
-        posts = data.posts || [];
-        renderPosts(posts);
-        dom.loading.classList.add('hidden'); dom.board.classList.remove('hidden');
-    } catch (err) {
-        dom.loading.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
-    }
+    dom.loading.classList.remove('hidden'); dom.board.classList.add('hidden');
+    try {
+        const res = await fetch(API_URL + "?action=list");
+        const data = await res.json();
+        posts = data.posts || [];
+        renderPosts(posts);
+        dom.loading.classList.add('hidden'); dom.board.classList.remove('hidden');
+    } catch (err) {
+        dom.loading.innerHTML = `<p class="text-red-500">เกิดข้อผิดพลาด: ${err.message}</p>`;
+    }
 }
 
 function renderPosts(data) {
-    if (!data.length) return dom.board.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400">ไม่พบข้อมูล</div>`;
-    dom.board.innerHTML = data.map(p => {
-        const img = p.images?.[0] || 'https://placehold.co/600x400/eee/bbb?text=No+Image';
-        const price = parseInt(p.price||0).toLocaleString();
-        return `
-        <article class="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-all group flex flex-col h-full">
-            <div class="relative aspect-[4/3] bg-gray-200 overflow-hidden">
-                <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                <div class="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded text-xs font-bold text-gray-700 shadow">฿${price}</div>
-            </div>
-            <div class="p-4 flex flex-col flex-grow">
-                <h3 class="font-semibold text-gray-900 line-clamp-2 mb-2">${p.title}</h3>
-                <p class="text-gray-500 text-sm line-clamp-3 mb-4 flex-grow whitespace-pre-line">${p.body}</p>
-                <div class="border-t pt-3 flex justify-between items-center mt-auto">
-                    <span class="text-xs text-gray-400">${new Date(p.createdAt).toLocaleDateString('th-TH')}</span>
-                    <div class="flex gap-2">
-                        <button onclick="editPost('${p.id}')" class="text-gray-400 hover:text-blue-600"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="delPost('${p.id}')" class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                </div>
-            </div>
-        </article>`;
-    }).join("");
+    if (!data.length) return dom.board.innerHTML = `<div class="col-span-full text-center py-20 bg-white rounded-xl border border-dashed"><i class="fa-regular fa-folder-open text-4xl text-gray-300 mb-2"></i><p class="text-gray-400">ไม่พบข้อมูลประกาศ</p></div>`;
+    
+    dom.board.innerHTML = data.map(p => {
+        const img = p.images?.[0] || 'https://placehold.co/600x400/f3f4f6/cbd5e1?text=No+Image';
+        const price = parseInt(p.price||0).toLocaleString();
+        const provinceTag = p.province ? `<span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded ml-2"><i class="fa-solid fa-location-dot mr-1"></i>${p.province}</span>` : '';
+        
+        return `
+        <article class="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-lg transition-all duration-300 group flex flex-col h-full relative">
+            <div class="relative aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer" onclick="viewImage('${img}')">
+                <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.src='https://placehold.co/600x400?text=Error'">
+                <div class="absolute top-2 right-2 bg-white/95 backdrop-blur px-2 py-1 rounded-md text-sm font-bold text-gray-800 shadow-sm border">฿${price}</div>
+                ${p.province ? `<div class="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-0.5 rounded text-xs backdrop-blur-sm"><i class="fa-solid fa-map-pin"></i> ${p.province}</div>` : ''}
+            </div>
+            <div class="p-4 flex flex-col flex-grow">
+                <h3 class="font-bold text-gray-900 line-clamp-2 mb-2 text-lg leading-tight group-hover:text-blue-600 transition-colors">${p.title}</h3>
+                <p class="text-gray-500 text-sm line-clamp-3 mb-4 flex-grow whitespace-pre-line">${p.body}</p>
+                <div class="border-t pt-3 flex justify-between items-center mt-auto">
+                    <span class="text-xs text-gray-400 flex items-center gap-1"><i class="fa-regular fa-clock"></i> ${new Date(p.createdAt).toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'2-digit'})}</span>
+                    <div class="flex gap-1">
+                        <button onclick="editPost('${p.id}')" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="แก้ไข"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="delPost('${p.id}')" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        </article>`;
+    }).join("");
 }
-function filterPosts(kw) { renderPosts(posts.filter(p => (p.title+p.body).toLowerCase().includes(kw.toLowerCase()))); }
+
+function applyFilters() {
+    const kw = (dom.searchDesktop.value || dom.searchMobile.value).toLowerCase();
+    const prov = dom.filterDesktop.value; // Desktop & Mobile filters are synced
+    
+    const filtered = posts.filter(p => {
+        const matchText = (p.title + p.body + (p.province||"")).toLowerCase().includes(kw);
+        const matchProv = prov === 'all' || p.province === prov;
+        return matchText && matchProv;
+    });
+    renderPosts(filtered);
+}
 
 // --- ACTIONS ---
-function openNewPostModal() { resetForm(); document.getElementById('dlgTitle').textContent="ลงประกาศ"; dom.dlg.showModal(); }
+function openNewPostModal() { 
+    resetForm(); 
+    document.getElementById('dlgTitle').textContent="ลงประกาศใหม่"; 
+    dom.dlg.showModal(); 
+}
+
 function closeModal() { dom.dlg.close(); }
+
 function editPost(id) {
-    const p = posts.find(x => x.id === id); if (!p) return;
-    resetForm();
-    dom.postId.value=p.id; dom.title.value=p.title; dom.price.value=p.price; dom.body.value=p.body;
-    if(p.images?.[0]) { dom.imgPreview.src=p.images[0]; dom.imgPreview.classList.remove('hidden'); document.getElementById('uploadPlaceholder').classList.add('opacity-0'); document.getElementById('btnRemoveImg').classList.remove('hidden'); }
-    document.getElementById('dlgTitle').textContent="แก้ไขประกาศ"; dom.dlg.showModal();
+    const p = posts.find(x => x.id === id); if (!p) return;
+    resetForm();
+    dom.postId.value = p.id;
+    dom.title.value = p.title;
+    dom.price.value = p.price;
+    dom.body.value = p.body;
+    dom.province.value = p.province || ""; // Load province
+    
+    // Extract other fields if embedded in body (Optional backward compatibility)
+    // For new posts, these should be separate, but let's keep it simple
+    
+    if(p.images?.[0]) { 
+        dom.imgPreview.src = p.images[0]; 
+        dom.imgPreview.classList.remove('hidden'); 
+        document.getElementById('uploadPlaceholder').classList.add('hidden'); 
+        document.getElementById('btnRemoveImg').classList.remove('hidden'); 
+    }
+    
+    document.getElementById('dlgTitle').textContent="แก้ไขประกาศ"; 
+    dom.dlg.showModal();
 }
 
 async function savePost() {
-    const id = dom.postId.value;
-    if(!dom.title.value || !dom.price.value) return Swal.fire('แจ้งเตือน','กรุณาระบุข้อมูล','warning');
-    
-    setLoading(true);
-    let fullBody = dom.body.value;
-    if(dom.address.value) fullBody = `📍 ทำเล: ${dom.address.value}\n` + fullBody;
-    if(dom.contactName.value) fullBody = `👤 ผู้ติดต่อ: ${dom.contactName.value}\n` + fullBody;
+    const id = dom.postId.value;
+    if(!dom.title.value || !dom.price.value || !dom.province.value) return Swal.fire('ข้อมูลไม่ครบ','กรุณาระบุ หัวข้อ, ราคา และจังหวัด','warning');
+    
+    setLoading(true);
+    
+    // Combine extra fields into body for display (optional, depending on how you want to store)
+    let fullBody = dom.body.value;
+    if(dom.address.value) fullBody = `📍 พิกัด: ${dom.address.value}\n` + fullBody;
+    if(dom.contactName.value) fullBody = `👤 ติดต่อ: ${dom.contactName.value}\n` + fullBody;
 
-    try {
-        let imgUrl = null;
-        if (dom.imgInput.files[0]) {
-             const b64 = await getBase64(dom.imgInput.files[0]);
-             const upRes = await sendToGoogle({ action:'upload', base64: b64.split(',')[1], name: dom.imgInput.files[0].name });
-             if(upRes.error) throw new Error(upRes.error);
-             imgUrl = upRes.url;
-        } else if (id) {
-             const old = posts.find(p=>p.id===id);
-             if(old && old.images?.[0] && !dom.imgPreview.classList.contains('hidden')) imgUrl = old.images[0];
-        }
+    try {
+        let imgUrl = null;
+        // Upload Logic
+        if (dom.imgInput.files[0]) {
+             const b64 = await getBase64(dom.imgInput.files[0]);
+             // backend will handle lh3 conversion
+             const upRes = await sendToGoogle({ action:'upload', base64: b64.split(',')[1], name: dom.imgInput.files[0].name });
+             if(upRes.error) throw new Error(upRes.error);
+             imgUrl = upRes.url; 
+        } else if (id) {
+             const old = posts.find(p=>p.id===id);
+             if(old && old.images?.[0] && !dom.imgPreview.classList.contains('hidden')) imgUrl = old.images[0];
+        }
 
-        const res = await sendToGoogle({
-            action: 'save',
-            post: { id, title: dom.title.value, price: dom.price.value, body: fullBody, images: imgUrl ? [imgUrl]:[] }
-        });
-        if(res.error) throw new Error(res.error);
+        const res = await sendToGoogle({
+            action: 'save',
+            post: { 
+                id, 
+                title: dom.title.value, 
+                price: dom.price.value, 
+                body: fullBody, 
+                province: dom.province.value, // Send Province
+                images: imgUrl ? [imgUrl]:[] 
+            }
+        });
+        if(res.error) throw new Error(res.error);
 
-        closeModal(); Swal.fire('สำเร็จ', 'บันทึกข้อมูลแล้ว', 'success'); loadPosts();
-    } catch(e) { Swal.fire('Error', e.message, 'error'); } finally { setLoading(false); }
+        closeModal(); 
+        Swal.fire({icon:'success', title:'สำเร็จ', text:'บันทึกข้อมูลเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false}); 
+        loadPosts();
+    } catch(e) { 
+        Swal.fire('เกิดข้อผิดพลาด', e.message, 'error'); 
+    } finally { 
+        setLoading(false); 
+    }
 }
 
 async function delPost(id) {
-    if(!(await Swal.fire({ title:'ยืนยันลบ?', showCancelButton:true, confirmButtonColor:'red', confirmButtonText:'ลบ' })).isConfirmed) return;
-    try {
-        const res = await sendToGoogle({ action:'delete', id });
-        if(res.error) throw new Error(res.error);
-        Swal.fire('ลบแล้ว','','success'); loadPosts();
-    } catch(e) { Swal.fire('Error',e.message,'error'); }
+    const result = await Swal.fire({ 
+        title:'ยืนยันการลบ?', 
+        text: "ข้อมูลและรูปภาพจะถูกลบถาวร",
+        icon: 'warning',
+        showCancelButton:true, 
+        confirmButtonColor:'#ef4444', 
+        confirmButtonText:'ลบประกาศ',
+        cancelButtonText:'ยกเลิก'
+    });
+    
+    if(!result.isConfirmed) return;
+    
+    // Show loading
+    Swal.fire({title: 'กำลังลบ...', didOpen: () => Swal.showLoading()});
+    
+    try {
+        const res = await sendToGoogle({ action:'delete', id });
+        if(res.error) throw new Error(res.error);
+        
+        Swal.fire('ลบสำเร็จ','','success'); 
+        loadPosts();
+    } catch(e) { 
+        Swal.fire('Error',e.message,'error'); 
+    }
 }
 
 // --- UTILS ---
+function viewImage(src) { Swal.fire({ imageUrl: src, imageAlt: 'Image', showConfirmButton: false, width: 'auto', background: 'transparent' }); }
 function previewImage(inpt) {
-    if(inpt.files[0]) {
-        const r = new FileReader();
-        r.onload = e => { dom.imgPreview.src = e.target.result; dom.imgPreview.classList.remove('hidden'); document.getElementById('uploadPlaceholder').classList.add('opacity-0'); document.getElementById('btnRemoveImg').classList.remove('hidden'); };
-        r.readAsDataURL(inpt.files[0]);
-    }
+    if(inpt.files[0]) {
+        const r = new FileReader();
+        r.onload = e => { 
+            dom.imgPreview.src = e.target.result; 
+            dom.imgPreview.classList.remove('hidden'); 
+            document.getElementById('uploadPlaceholder').classList.add('hidden'); 
+            document.getElementById('btnRemoveImg').classList.remove('hidden'); 
+        };
+        r.readAsDataURL(inpt.files[0]);
+    }
 }
-function removeImage() { dom.imgInput.value=""; dom.imgPreview.classList.add('hidden'); document.getElementById('uploadPlaceholder').classList.remove('opacity-0'); document.getElementById('btnRemoveImg').classList.add('hidden'); }
+function removeImage() { 
+    dom.imgInput.value=""; 
+    dom.imgPreview.classList.add('hidden'); 
+    document.getElementById('uploadPlaceholder').classList.remove('hidden'); 
+    document.getElementById('btnRemoveImg').classList.add('hidden'); 
+}
 function getBase64(file) { return new Promise((r,j) => { const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.onerror=j; fr.readAsDataURL(file); }); }
-function resetForm() { dom.postId.value=''; dom.title.value=''; dom.price.value=''; dom.contactName.value=''; dom.address.value=''; dom.body.value=''; removeImage(); }
-function setLoading(isLoad) { const b=document.getElementById('btnSave'); b.disabled=isLoad; b.classList.toggle('opacity-70',isLoad); document.getElementById('btnSaveText').textContent=isLoad?'กำลังบันทึก...':'บันทึก'; }
+function resetForm() { 
+    dom.postId.value=''; dom.title.value=''; dom.price.value=''; 
+    dom.contactName.value=''; dom.address.value=''; dom.province.value=''; 
+    dom.body.value=''; removeImage(); 
+}
+function setLoading(isLoad) { 
+    const b=document.getElementById('btnSave'); 
+    b.disabled=isLoad; 
+    b.classList.toggle('opacity-70',isLoad); 
+    document.getElementById('btnSaveText').textContent=isLoad?'กำลังบันทึก...':'บันทึกข้อมูล'; 
+    document.getElementById('btnSaveIcon').className = isLoad ? 'fa-solid fa-circle-notch fa-spin' : 'fa-solid fa-paper-plane';
+}
 
 init();
 </script>

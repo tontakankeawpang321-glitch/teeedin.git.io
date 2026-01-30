@@ -529,6 +529,12 @@ function init() {
     dom.filterProvinceHero.addEventListener('change', applyFilters);
     dom.filterAmphoeHero.addEventListener('input', debounce(applyFilters, 300));
     dom.filterAmphoeMobile.addEventListener('input', debounce(applyFilters, 300));
+
+    // Handle body scroll lock on dialog close (e.g. Escape key)
+    dom.dlg.addEventListener('close', () => document.body.classList.remove('overflow-hidden'));
+    dom.viewDlg.addEventListener('close', () => {
+        if(!reopenViewOnSliderClose) document.body.classList.remove('overflow-hidden');
+    });
 }
 
 function refreshApp() {
@@ -776,11 +782,13 @@ async function searchLocation() {
 function openNewPostModal() {
     resetForm();
     dom.dlg.showModal();
+    document.body.classList.add('overflow-hidden'); // Lock scroll
     setTimeout(() => map.invalidateSize(), 300);
 }
 
 function closeModal() {
     dom.dlg.close();
+    document.body.classList.remove('overflow-hidden'); // Unlock scroll
     resetForm();
 }
 
@@ -897,10 +905,12 @@ function viewPost(id) {
     
     dom.viewDeleteBtn.onclick = () => deletePost(post.id);
     dom.viewDlg.showModal();
+    document.body.classList.add('overflow-hidden'); // Lock scroll
 }
 
 function closeViewModal() {
     dom.viewDlg.close();
+    document.body.classList.remove('overflow-hidden'); // Unlock scroll
     reopenViewOnSliderClose = false;
 }
 
@@ -911,8 +921,8 @@ function openImageSlider(index) {
     updateSliderImage();
     
     if (dom.viewDlg.open) {
+        reopenViewOnSliderClose = true; // Set BEFORE closing
         dom.viewDlg.close();
-        reopenViewOnSliderClose = true;
     }
     
     dom.slider.classList.remove('hidden');
@@ -929,6 +939,7 @@ function closeImageSlider() {
         dom.slider.classList.add('hidden');
         if (reopenViewOnSliderClose) {
             dom.viewDlg.showModal();
+            // document.body.classList.add('overflow-hidden'); // Already locked
             reopenViewOnSliderClose = false;
         }
     }, 300);

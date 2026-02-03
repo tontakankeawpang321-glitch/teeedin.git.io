@@ -419,7 +419,7 @@
                     <input id="img" type="file" class="hidden" accept="image/*" multiple onchange="appendImages(this)">
                 </label>
             </div>
-            <p class="text-[10px] text-stone-400 mt-2 text-center">* ต้องอัพ 3 รูป รูปถึงแสดง </p>
+            <p class="text-[10px] text-stone-400 mt-2 text-center">* สามารถอัพโหลดรูปภาพได้สูงสุด 3 รูป</p>
         </div>
     </div>
     
@@ -834,14 +834,22 @@ function updateSliderImage() {
 
 // --- IMAGE UPLOAD ---
 function appendImages(input) {
-    if (input.files) {
+    if (input.files && input.files.length > 0) {
         const remaining = 3 - formImages.length;
         const filesToProcess = Array.from(input.files).slice(0, remaining);
+        
         filesToProcess.forEach(file => {
             const reader = new FileReader();
-            reader.onload = (e) => { formImages.push(e.target.result); renderFormImages(); };
+            reader.onload = (e) => { 
+                formImages.push(e.target.result); 
+                // ใช้ requestAnimationFrame เพื่อให้แน่ใจว่า DOM พร้อมอัปเดต
+                requestAnimationFrame(renderFormImages); 
+            };
             reader.readAsDataURL(file);
         });
+
+        // รีเซ็ตค่า input เพื่อให้สามารถเลือกไฟล์เดิมซ้ำได้ถ้าลบออกไปแล้ว
+        input.value = '';
     }
 }
 
@@ -889,12 +897,19 @@ function validateForm() {
 
     // หากมีข้อมูลไม่ครบ ให้เด้ง Alert
     if (!isValid) {
+        // ปิด Dialog ชั่วคราวเพื่อให้เห็น Alert ชัดเจน และไม่ล้างข้อมูล
+        dom.dlg.close(); 
+        
         Swal.fire({
             icon: 'error',
             title: 'กรอกข้อมูลไม่ครบถ้วน',
             text: 'กรุณากรอก: ' + missingFields.join(', '),
             confirmButtonColor: '#10b981',
             confirmButtonText: 'ตกลง'
+        }).then(() => {
+            // เปิด Dialog กลับมาพร้อมข้อมูลเดิมเมื่อปิด Alert
+            dom.dlg.showModal();
+            document.body.classList.add('overflow-hidden');
         });
     }
 

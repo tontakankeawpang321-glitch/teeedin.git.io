@@ -99,32 +99,33 @@
     }
 </style>
 </head>
-<body class="min-h-screen flex flex-col pb-safe bg-stone-50">
+<body class="min-h-screen flex flex-col pb-safe bg-stone-50 pb-20 md:pb-0">
 
 <!-- Navbar -->
 <nav class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-stone-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-      <div class="flex items-center gap-3 cursor-pointer group" onclick="refreshApp()">
-        <div class="bg-gradient-to-br from-brand-600 to-brand-500 text-white w-10 h-10 flex items-center justify-center rounded-xl shadow-lg shadow-brand-500/30 group-hover:rotate-12 transition-transform duration-300">
-            <i class="fa-solid fa-earth-asia text-lg"></i>
-        </div>
-        <div class="flex flex-col">
-            <span class="font-bold text-lg leading-tight text-stone-800">Land<span class="text-brand-600">Market</span></span>
-            <span class="text-[10px] text-stone-500 font-medium tracking-wide">ศูนย์รวมที่ดินไทย</span>
-        </div>
+      <div class="flex items-center gap-4">
+          <!-- Logo / Refresh -->
+          <div class="flex items-center gap-3 cursor-pointer group" onclick="refreshApp()">
+            <div class="bg-gradient-to-br from-brand-600 to-brand-500 text-white w-10 h-10 flex items-center justify-center rounded-xl shadow-lg shadow-brand-500/30 group-hover:rotate-12 transition-transform duration-300">
+                <i class="fa-solid fa-earth-asia text-lg"></i>
+            </div>
+            <div class="flex flex-col">
+                <span class="font-bold text-lg leading-tight text-stone-800">Land<span class="text-brand-600">Market</span></span>
+                <span class="text-[10px] text-stone-500 font-medium tracking-wide">ศูนย์รวมที่ดินไทย</span>
+            </div>
+          </div>
+
+          <!-- Favorites Button (Top) -->
+          <button onclick="openFavorites()" class="w-10 h-10 rounded-full bg-stone-50 hover:bg-red-50 text-stone-400 hover:text-red-500 flex items-center justify-center transition-all border border-stone-200">
+              <i class="fa-solid fa-heart text-lg"></i>
+          </button>
       </div>
       
       <!-- Desktop Actions -->
       <div class="hidden md:flex items-center gap-4">
          <button onclick="openNewPostModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 rounded-full shadow-lg shadow-brand-500/20 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 font-medium">
             <i class="fa-solid fa-plus"></i> ลงประกาศขายฟรี
-         </button>
-      </div>
-      
-      <!-- Mobile Menu Button -->
-      <div class="md:hidden">
-         <button onclick="openNewPostModal()" class="text-brand-600 bg-brand-50 hover:bg-brand-100 p-2.5 rounded-xl transition-colors">
-            <i class="fa-solid fa-plus text-lg"></i>
          </button>
       </div>
   </div>
@@ -141,8 +142,9 @@
         <h1 class="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4 drop-shadow-md">ค้นหาที่ดินทำเลทองทั่วประเทศไทย</h1>
         <p class="text-brand-100 text-sm md:text-lg mb-6 max-w-2xl font-light">แหล่งรวมประกาศขายที่ดิน ค้นหาง่าย ครบทุกจังหวัด ลงประกาศฟรีไม่มีค่าใช้จ่าย</p>
         
-        <!-- Search Box Container -->
+        <!-- Search Box Container (MODIFIED: Top is Province) -->
         <div class="bg-white p-2 rounded-2xl shadow-xl w-full max-w-3xl flex flex-col md:flex-row gap-2 border border-stone-200">
+            <!-- Province Select (Desktop & Mobile) -->
             <div class="w-full md:w-1/3 relative">
                  <select id="hero_province" class="w-full px-4 py-3 bg-stone-50 border border-transparent rounded-xl appearance-none outline-none focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 text-sm text-stone-800 cursor-pointer h-full">
                     <option value="all">ทุกจังหวัด</option>
@@ -150,6 +152,7 @@
                 <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-stone-400 text-xs pointer-events-none"></i>
             </div>
 
+            <!-- Amphoe Input (Desktop Only - to allow search on desktop too) -->
             <div class="hidden md:block w-full md:w-2/3 relative">
                 <i class="fa-solid fa-map-location-dot absolute left-4 top-3.5 text-stone-400"></i>
                 <input id="hero_amphoe" type="text" placeholder="ระบุอำเภอ (เช่น แม่ริม, ปากเกร็ด...)" class="w-full pl-11 pr-4 py-3 rounded-xl bg-stone-50 border border-transparent focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition-all text-sm text-stone-800">
@@ -208,7 +211,7 @@
     </div>
 </main>
 
-<footer class="bg-white border-t border-stone-200 mt-auto">
+<footer class="bg-white border-t border-stone-200 mt-auto pb-20 md:pb-0">
     <div class="max-w-7xl mx-auto px-4 py-8">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-2">
@@ -228,7 +231,27 @@
     </div>
 </footer>
 
-<!-- Image Slider Overlay -->
+<!-- Bottom Navigation Bar (Mobile Only) -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 px-6 py-3 flex justify-between items-center md:hidden z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+    <button onclick="window.scrollTo({top:0, behavior:'smooth'}); refreshApp();" class="flex flex-col items-center gap-1 text-stone-400 hover:text-brand-600 active:text-brand-600 transition-colors">
+        <i class="fa-solid fa-home text-xl"></i>
+        <span class="text-[10px] font-medium">หน้าหลัก</span>
+    </button>
+    
+    <button onclick="openNewPostModal()" class="flex flex-col items-center gap-1 -mt-8">
+        <div class="w-14 h-14 bg-brand-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-brand-500/40 hover:scale-105 active:scale-95 transition-all">
+            <i class="fa-solid fa-plus text-2xl"></i>
+        </div>
+        <span class="text-[10px] font-medium text-brand-700 font-bold">ลงประกาศ</span>
+    </button>
+    
+    <button onclick="openFavorites()" class="flex flex-col items-center gap-1 text-stone-400 hover:text-red-500 active:text-red-500 transition-colors">
+        <i class="fa-solid fa-heart text-xl"></i>
+        <span class="text-[10px] font-medium">รายการโปรด</span>
+    </button>
+</div>
+
+<!-- Custom Image Slider Overlay -->
 <div id="imageSlider" class="fixed inset-0 z-[70] bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center slider-hidden hidden touch-none">
     <button onclick="closeImageSlider()" class="absolute top-4 right-4 text-white/80 hover:text-white w-12 h-12 flex items-center justify-center bg-white/10 rounded-full backdrop-blur-md z-50 transition-all hover:bg-white/20">
         <i class="fa-solid fa-xmark text-2xl"></i>
@@ -248,7 +271,10 @@
 <!-- View Details Dialog -->
 <dialog id="viewDlg" class="bg-white rounded-3xl shadow-2xl p-0 w-[95%] max-w-2xl m-auto backdrop:bg-stone-900/40 max-h-[90vh] overflow-hidden border border-stone-100">
     <div class="relative">
+        <!-- Close Button Absolute -->
         <button onclick="closeViewModal()" class="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white w-8 h-8 rounded-full backdrop-blur flex items-center justify-center transition-all"><i class="fa-solid fa-xmark"></i></button>
+        
+        <!-- Header Image Area -->
         <div id="viewImageHeader" class="w-full h-64 bg-stone-200 relative group cursor-pointer" onclick="if(sliderImages.length>0) openImageSlider(0)">
             <img id="viewMainImage" src="" class="w-full h-full object-cover">
             <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -260,15 +286,21 @@
                 For Sale
             </div>
         </div>
+
         <div class="p-6 overflow-y-auto max-h-[calc(90vh-256px)] custom-scrollbar">
+            
+            <!-- Gallery Strip -->
             <div class="mb-4">
                  <h4 class="text-xs font-bold text-stone-500 mb-2">รูปภาพเพิ่มเติม</h4>
                  <div id="viewImages" class="flex gap-2 overflow-x-auto pb-2 snap-x"></div>
             </div>
+
             <div class="flex justify-between items-start mb-4 gap-4">
                 <h2 id="viewTitle" class="text-xl font-bold text-stone-800 leading-snug"></h2>
                 <button id="btnDeletePost" class="text-stone-300 hover:text-red-500 transition-colors p-2" title="ลบประกาศ"><i class="fa-solid fa-trash-can"></i></button>
             </div>
+
+            <!-- Contact Buttons Grid -->
             <div id="viewContactActions" class="grid grid-cols-2 gap-3 mb-6 hidden">
                 <a id="viewPhoneLink" href="#" class="flex items-center justify-center gap-2 py-2.5 bg-emerald-500 text-white rounded-xl shadow-md hover:bg-emerald-600 transition-colors active:scale-95 text-sm font-bold">
                     <i class="fa-solid fa-phone"></i> โทรออก
@@ -277,6 +309,8 @@
                     <i class="fa-brands fa-line text-lg"></i> แอดไลน์
                 </a>
             </div>
+
+            <!-- Key Info Grid -->
             <div class="grid grid-cols-2 gap-3 mb-6">
                 <div class="bg-stone-50 p-3 rounded-2xl border border-stone-100 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-brand-600 shadow-sm flex-shrink-0"><i class="fa-solid fa-location-dot"></i></div>
@@ -293,12 +327,15 @@
                     </div>
                 </div>
             </div>
+
             <div class="mb-6">
                 <h4 class="text-sm font-bold text-stone-800 mb-3 flex items-center gap-2 border-b border-stone-100 pb-2">
                     <i class="fa-solid fa-align-left text-brand-500"></i> รายละเอียดทรัพย์สิน
                 </h4>
                 <div id="viewBody" class="whitespace-pre-line text-sm leading-relaxed text-stone-600 font-light"></div>
             </div>
+
+            <!-- Map Section -->
             <div id="viewMapContainer" class="hidden rounded-2xl overflow-hidden border border-stone-200">
                 <div class="bg-stone-100 px-4 py-2 border-b border-stone-200 flex justify-between items-center">
                     <h4 class="text-xs font-bold text-stone-700"><i class="fa-solid fa-map-location text-brand-500 mr-1"></i> แผนที่</h4>
@@ -308,7 +345,25 @@
                     <div id="viewMap" class="h-full w-full"></div>
                 </div>
             </div>
+            
         </div>
+    </div>
+</dialog>
+
+<!-- Favorites Dialog -->
+<dialog id="favDlg" class="bg-white rounded-3xl shadow-2xl p-0 w-[95%] max-w-lg m-auto backdrop:bg-stone-900/40 max-h-[90vh] overflow-hidden border border-stone-100">
+    <div class="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-white sticky top-0 z-10">
+        <div>
+            <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2"><i class="fa-solid fa-heart text-red-500"></i> รายการโปรด</h3>
+            <p class="text-[10px] text-stone-400">ประกาศที่คุณบันทึกไว้</p>
+        </div>
+        <button onclick="document.getElementById('favDlg').close(); document.body.classList.remove('overflow-hidden');" class="w-8 h-8 rounded-full hover:bg-stone-100 flex items-center justify-center text-stone-400 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <div id="favList" class="p-6 overflow-y-auto max-h-[60vh] custom-scrollbar space-y-4">
+        <!-- Favorites will be rendered here -->
+    </div>
+    <div class="p-4 bg-stone-50 border-t border-stone-100 text-center text-xs text-stone-400">
+        ข้อมูลถูกบันทึกในอุปกรณ์นี้
     </div>
 </dialog>
 
@@ -356,11 +411,14 @@
             <label class="block text-xs font-bold text-stone-700 mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-location-dot text-brand-500"></i> ปักหมุดที่ดิน (ระบุพิกัด)
             </label>
+            
             <div class="flex gap-2 mb-3">
                 <input id="mapSearchInput" type="text" placeholder="ค้นหาตำบล, อำเภอ..." class="flex-grow px-3 py-2 border border-stone-200 rounded-lg text-xs outline-none focus:border-brand-500 bg-white" onkeypress="if(event.key==='Enter'){event.preventDefault();searchLocation();}">
                 <button type="button" onclick="searchLocation()" class="px-3 py-2 bg-brand-600 text-white rounded-lg text-xs hover:bg-brand-700 shadow-sm"><i class="fa-solid fa-search"></i></button>
             </div>
+
             <div id="map" class="shadow-sm border border-stone-200"></div>
+            
             <div class="flex justify-between items-center mt-2">
                 <span class="text-[10px] text-stone-400">ลากหมุดเพื่อปรับตำแหน่งที่แม่นยำ</span>
                 <span id="latlng_display" class="text-[10px] font-mono bg-white px-2 py-1 rounded border border-stone-100 text-stone-400">ยังไม่ระบุพิกัด</span>
@@ -419,7 +477,7 @@
                     <input id="img" type="file" class="hidden" accept="image/*" multiple onchange="appendImages(this)">
                 </label>
             </div>
-            <p class="text-[10px] text-stone-400 mt-2 text-center">* สามารถอัพโหลดรูปภาพได้สูงสุด 3 รูป</p>
+            <p class="text-[10px] text-stone-400 mt-2 text-center">* แนะนำรูปแนวนอนเพื่อความสวยงาม</p>
         </div>
     </div>
     
@@ -457,8 +515,9 @@ const defaultPosts = [
 // --- STATE ---
 let posts = [];
 let filteredPosts = [];
+let favorites = JSON.parse(localStorage.getItem('landmarket_favs')) || [];
 let currentPage = 1;
-const ITEMS_PER_PAGE = 18;
+const ITEMS_PER_PAGE = 18; // Increased for 3 column grid
 
 let formImages = [];
 let sliderImages = [];
@@ -473,6 +532,7 @@ const dom = {
     pageIndicator: document.getElementById('pageIndicator'),
     btnPrev: document.getElementById('btnPrev'), btnNext: document.getElementById('btnNext'),
     dlg: document.getElementById('dlg'), viewDlg: document.getElementById('viewDlg'),
+    favDlg: document.getElementById('favDlg'), favList: document.getElementById('favList'),
     postId: document.getElementById('postId'),
     title: document.getElementById('title'), price: document.getElementById('price'),
     contactName: document.getElementById('contact_name'), address: document.getElementById('address'),
@@ -484,6 +544,7 @@ const dom = {
     lat: document.getElementById('lat'), lng: document.getElementById('lng'),
     latlng_display: document.getElementById('latlng_display'),
     
+    // Updated Filter References
     filterProvinceHero: document.getElementById('hero_province'),
     filterAmphoeHero: document.getElementById('hero_amphoe'),
     filterAmphoeMobile: document.getElementById('mobile_amphoe'),
@@ -504,14 +565,17 @@ function init() {
     loadPosts(); 
     initMap();
     
+    // Event Listeners for Filters
     dom.filterProvinceHero.addEventListener('change', applyFilters);
     dom.filterAmphoeHero.addEventListener('input', debounce(applyFilters, 300));
     dom.filterAmphoeMobile.addEventListener('input', debounce(applyFilters, 300));
 
+    // Handle body scroll lock on dialog close (e.g. Escape key)
     dom.dlg.addEventListener('close', () => document.body.classList.remove('overflow-hidden'));
     dom.viewDlg.addEventListener('close', () => {
         if(!reopenViewOnSliderClose) document.body.classList.remove('overflow-hidden');
     });
+    dom.favDlg.addEventListener('close', () => document.body.classList.remove('overflow-hidden'));
 }
 
 function refreshApp() {
@@ -523,8 +587,73 @@ function refreshApp() {
 
 function populateProvinces() {
     const options = PROVINCES.map(p => `<option value="${p}">${p}</option>`).join('');
+    
+    // Populate Modal Dropdown
     dom.province.innerHTML = `<option value="">เลือกจังหวัด</option>${options}`;
+    
+    // Populate Hero Filter Dropdown
     dom.filterProvinceHero.innerHTML = `<option value="all">ทุกจังหวัด</option>${options}`;
+}
+
+// --- FAVORITES LOGIC ---
+function toggleFavorite(e, id) {
+    if(e) e.stopPropagation();
+    
+    const index = favorites.indexOf(id);
+    if (index === -1) {
+        favorites.push(id);
+        // Show temporary feedback (optional)
+    } else {
+        favorites.splice(index, 1);
+    }
+    localStorage.setItem('landmarket_favs', JSON.stringify(favorites));
+    renderBoard(); // Re-render to update icons
+    
+    // If favorites dialog is open, refresh it
+    if(dom.favDlg.open) renderFavoritesList();
+}
+
+function openFavorites() {
+    renderFavoritesList();
+    dom.favDlg.showModal();
+    document.body.classList.add('overflow-hidden');
+}
+
+function renderFavoritesList() {
+    const favPosts = posts.filter(p => favorites.includes(p.id));
+    dom.favList.innerHTML = '';
+    
+    if (favPosts.length === 0) {
+        dom.favList.innerHTML = `
+            <div class="text-center py-8 text-stone-400">
+                <i class="fa-regular fa-heart text-4xl mb-2"></i>
+                <p>ยังไม่มีรายการโปรด</p>
+            </div>
+        `;
+        return;
+    }
+    
+    favPosts.forEach(p => {
+        const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://placehold.co/400x300?text=No+Image';
+        const item = document.createElement('div');
+        item.className = "flex gap-3 bg-stone-50 p-2 rounded-xl border border-stone-100 cursor-pointer hover:bg-stone-100 transition-colors";
+        item.onclick = () => {
+            dom.favDlg.close();
+            viewPost(p.id);
+        };
+        item.innerHTML = `
+            <img src="${imgUrl}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0">
+            <div class="flex-grow min-w-0 flex flex-col justify-center">
+                <h4 class="font-bold text-stone-800 text-sm line-clamp-1">${p.title}</h4>
+                <p class="text-xs text-stone-500 truncate"><i class="fa-solid fa-location-dot"></i> ${p.province}</p>
+                <div class="flex justify-between items-center mt-1">
+                    <span class="text-brand-600 font-bold text-sm">฿${formatPriceCompact(p.price)}</span>
+                    <button onclick="toggleFavorite(event, ${p.id})" class="text-red-500 hover:text-red-700 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm border border-stone-100"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>
+        `;
+        dom.favList.appendChild(item);
+    });
 }
 
 // --- API LOADING ---
@@ -537,8 +666,13 @@ async function loadPosts() {
     try {
         const response = await fetch(API_URL, { redirect: "follow" });
         if (!response.ok) throw new Error('Network response was not ok');
+        
         const data = await response.json();
-        let rawData = Array.isArray(data) ? data : (data.data || []);
+        
+        let rawData = [];
+        if (Array.isArray(data)) rawData = data;
+        else if (data.data && Array.isArray(data.data)) rawData = data.data;
+        
         posts = rawData.map(item => ({
             id: item.id || Date.now() + Math.random(),
             title: item.title || 'ไม่มีหัวข้อ',
@@ -553,6 +687,7 @@ async function loadPosts() {
             lat: item.lat ? parseFloat(item.lat) : null,
             lng: item.lng ? parseFloat(item.lng) : null
         }));
+        
     } catch (error) {
         console.error('API Error:', error);
         posts = [...defaultPosts];
@@ -575,27 +710,40 @@ function parseImages(imgData) {
     if (typeof imgData === 'string') {
         try {
             const parsed = JSON.parse(imgData);
-            return Array.isArray(parsed) ? parsed : [imgData];
+            if (Array.isArray(parsed)) return parsed;
+            return [imgData];
         } catch (e) {
-            return imgData.includes(',') ? imgData.split(',').map(s => s.trim()) : [imgData];
+            if (imgData.includes(',')) return imgData.split(',').map(s => s.trim());
+            return [imgData];
         }
     }
     return [];
 }
 
 function applyFilters() {
+    // Logic: Filter by Province (Hero) AND Amphoe (Hero or Mobile)
     const prov = dom.filterProvinceHero.value;
-    const query = (dom.filterAmphoeHero.value.trim().toLowerCase() || dom.filterAmphoeMobile.value.trim().toLowerCase());
+    
+    // Combine search text from both desktop and mobile inputs (usually one is hidden/empty)
+    const qDesktop = dom.filterAmphoeHero.value.trim().toLowerCase();
+    const qMobile = dom.filterAmphoeMobile.value.trim().toLowerCase();
+    const query = qDesktop || qMobile;
+    
     filteredPosts = posts.filter(p => {
+        // 1. Check Province
         const matchProv = prov === 'all' || p.province === prov;
+        
+        // 2. Check Amphoe/Text
         let matchText = true;
         if (query) {
              matchText = (p.address && p.address.toLowerCase().includes(query)) || 
                          (p.province && p.province.toLowerCase().includes(query)) ||
                          (p.body && p.body.toLowerCase().includes(query));
         }
+        
         return matchProv && matchText;
     });
+    
     dom.resultCount.textContent = `${filteredPosts.length} รายการ`;
     currentPage = 1;
     renderBoard();
@@ -606,8 +754,10 @@ function renderBoard() {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     const end = start + ITEMS_PER_PAGE;
     const pageData = filteredPosts.slice(start, end);
+    
     if (pageData.length === 0) {
-        dom.board.innerHTML = `<div class="col-span-full text-center py-16 flex flex-col items-center">
+        dom.board.innerHTML = `
+            <div class="col-span-full text-center py-16 flex flex-col items-center">
                 <div class="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center text-stone-300 mb-4">
                     <i class="fa-solid fa-map-location-dot text-3xl"></i>
                 </div>
@@ -616,11 +766,16 @@ function renderBoard() {
             </div>`;
         return;
     }
+
     pageData.forEach(p => {
         const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://placehold.co/400x300?text=No+Image';
+        const isFav = favorites.includes(p.id);
+        
         const card = document.createElement('div');
-        card.className = "bg-white rounded-2xl shadow-sm border border-stone-100 hover-lift overflow-hidden cursor-pointer group flex flex-col h-full";
+        card.className = "bg-white rounded-2xl shadow-sm border border-stone-100 hover-lift overflow-hidden cursor-pointer group flex flex-col h-full relative";
         card.onclick = () => viewPost(p.id);
+        
+        // Compact 3-column layout changes
         card.innerHTML = `
             <div class="h-28 sm:h-48 relative overflow-hidden bg-stone-200">
                 <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
@@ -628,6 +783,9 @@ function renderBoard() {
                 <div class="absolute top-1 right-1 sm:top-3 sm:left-3 sm:right-auto bg-white/95 backdrop-blur px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded sm:rounded-lg text-[9px] sm:text-[10px] font-bold text-brand-700 shadow-sm flex items-center gap-1">
                     <i class="fa-solid fa-location-dot hidden sm:inline"></i> ${p.province}
                 </div>
+                <button onclick="toggleFavorite(event, ${p.id})" class="absolute top-1 left-1 sm:top-3 sm:right-3 sm:left-auto w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white backdrop-blur flex items-center justify-center shadow-sm transition-all z-10 ${isFav ? 'text-red-500' : 'text-stone-400 hover:text-red-400'}">
+                    <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                </button>
                 <div class="absolute bottom-1 left-1 sm:bottom-3 sm:left-3 text-white font-bold text-xs sm:text-lg drop-shadow-md sm:transform sm:translate-y-4 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 transition-all duration-300 bg-black/30 sm:bg-transparent px-1 sm:px-0 rounded">
                     ฿${formatPriceCompact(p.price)}
                 </div>
@@ -641,9 +799,11 @@ function renderBoard() {
                     <span class="text-brand-600 font-bold text-xs sm:text-lg hidden sm:block">฿${formatPriceCompact(p.price)}</span>
                     <span class="text-[9px] sm:text-[10px] text-stone-400 font-medium">ดู<span class="hidden sm:inline">รายละเอียด</span> <i class="fa-solid fa-arrow-right ml-0.5 sm:ml-1"></i></span>
                 </div>
-            </div>`;
+            </div>
+        `;
         dom.board.appendChild(card);
     });
+    
     updatePagination();
 }
 
@@ -701,9 +861,11 @@ function updateFormCoords(lat, lng) {
 async function searchLocation() {
     const query = document.getElementById('mapSearchInput').value;
     if (!query) return;
+    
     const btn = document.querySelector('button[onclick="searchLocation()"]');
     const originalContent = btn.innerHTML;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    
     try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
         const data = await res.json();
@@ -715,31 +877,51 @@ async function searchLocation() {
         } else {
             Swal.fire({icon: 'warning', title: 'ไม่พบสถานที่', toast: true, position: 'top', showConfirmButton: false, timer: 2000});
         }
-    } catch (e) { console.error(e); } finally { btn.innerHTML = originalContent; }
+    } catch (e) {
+        console.error(e);
+    } finally {
+        btn.innerHTML = originalContent;
+    }
 }
 
 // --- MODAL FUNCTIONS ---
 function openNewPostModal() {
     resetForm();
     dom.dlg.showModal();
-    document.body.classList.add('overflow-hidden');
+    document.body.classList.add('overflow-hidden'); // Lock scroll
     setTimeout(() => map.invalidateSize(), 300);
 }
 
 function closeModal() {
     dom.dlg.close();
-    document.body.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden'); // Unlock scroll
     resetForm();
 }
 
 function resetForm() {
-    dom.postId.value = ''; dom.title.value = ''; dom.price.value = ''; dom.contactName.value = '';
-    dom.phone.value = ''; dom.lineId.value = ''; dom.address.value = ''; dom.body.value = '';
-    dom.province.value = ''; dom.imgInput.value = ''; dom.lat.value = ''; dom.lng.value = '';
+    dom.postId.value = '';
+    dom.title.value = '';
+    dom.price.value = '';
+    dom.contactName.value = '';
+    dom.phone.value = '';
+    dom.lineId.value = '';
+    dom.address.value = '';
+    dom.body.value = '';
+    dom.province.value = '';
+    dom.imgInput.value = '';
+    dom.lat.value = '';
+    dom.lng.value = '';
     dom.latlng_display.textContent = 'ยังไม่ระบุพิกัด';
     dom.latlng_display.className = "text-[10px] font-mono bg-white px-2 py-1 rounded border border-stone-100 text-stone-400";
-    formImages = []; dom.previewList.innerHTML = ''; dom.imgCount.textContent = '0/3';
-    if (marker) { map.removeLayer(marker); marker = null; }
+    
+    formImages = [];
+    dom.previewList.innerHTML = '';
+    dom.imgCount.textContent = '0/3';
+    
+    if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+    }
     map.setView([13.7563, 100.5018], 6);
     document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
 }
@@ -748,57 +930,93 @@ function resetForm() {
 function viewPost(id) {
     const post = posts.find(p => p.id === id);
     if (!post) return;
+    
     dom.viewTitle.textContent = post.title;
     dom.viewPriceHeader.textContent = '฿' + parseInt(post.price).toLocaleString();
     dom.viewContact.textContent = post.contact_name || '-';
     dom.viewLocation.textContent = (post.address ? post.address + ' ' : '') + post.province;
     dom.viewBody.textContent = post.body || '-';
-    let hasPhone = !!post.phone, hasLine = !!post.line_id;
+    
+    // Actions logic
+    let hasPhone = !!post.phone;
+    let hasLine = !!post.line_id;
+    
     if (hasPhone || hasLine) {
         dom.viewContactActions.classList.remove('hidden');
-        dom.viewPhoneLink.classList.toggle('hidden', !hasPhone);
-        if(hasPhone) dom.viewPhoneLink.href = `tel:${post.phone}`;
-        dom.viewLineLink.classList.toggle('hidden', !hasLine);
-        if(hasLine) dom.viewLineLink.href = `https://line.me/ti/p/~${post.line_id}`;
-    } else dom.viewContactActions.classList.add('hidden');
+        
+        // Phone
+        if (hasPhone) {
+            dom.viewPhoneLink.href = `tel:${post.phone}`;
+            dom.viewPhoneLink.classList.remove('hidden');
+        } else {
+            dom.viewPhoneLink.classList.add('hidden');
+        }
+        
+        // Line
+        if (hasLine) {
+            dom.viewLineLink.href = `https://line.me/ti/p/~${post.line_id}`;
+            dom.viewLineLink.classList.remove('hidden');
+        } else {
+            dom.viewLineLink.classList.add('hidden');
+        }
+    } else {
+        dom.viewContactActions.classList.add('hidden');
+    }
+    
+    // Images
     dom.viewImages.innerHTML = '';
     sliderImages = post.images && post.images.length ? post.images : [];
+    
     if (sliderImages.length > 0) {
         dom.viewMainImage.src = sliderImages[0];
-        sliderImages.forEach((url) => {
+        
+        sliderImages.forEach((url, idx) => {
             const img = document.createElement('img');
             img.src = url;
             img.className = "h-16 w-24 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-brand-500 transition-all";
-            img.onclick = () => { dom.viewMainImage.src = url; };
+            img.onclick = () => {
+                dom.viewMainImage.src = url;
+            };
             dom.viewImages.appendChild(img);
         });
+        
+        // Add click listener to main image header to open slider
         dom.viewImageHeader.onclick = () => openImageSlider(0);
+        
     } else {
         dom.viewMainImage.src = 'https://placehold.co/600x400?text=No+Image';
         dom.viewImages.innerHTML = '<span class="text-xs text-stone-400">ไม่มีรูปภาพเพิ่มเติม</span>';
     }
+    
+    // Map in View
     if (post.lat && post.lng) {
         dom.viewMapContainer.classList.remove('hidden');
         if (!viewMap) {
             viewMap = L.map('viewMap', {zoomControl: false});
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '' }).addTo(viewMap);
         }
+        
         setTimeout(() => {
             viewMap.invalidateSize();
             viewMap.setView([post.lat, post.lng], 13);
             if (viewMarker) viewMap.removeLayer(viewMarker);
             viewMarker = L.marker([post.lat, post.lng]).addTo(viewMap);
         }, 200);
-        document.getElementById('viewMapLink').href = `https://www.google.com/maps/search/?api=1&query=${post.lat},${post.lng}`;
-    } else dom.viewMapContainer.classList.add('hidden');
+        
+        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${post.lat},${post.lng}`;
+        document.getElementById('viewMapLink').href = mapUrl;
+    } else {
+        dom.viewMapContainer.classList.add('hidden');
+    }
+    
     dom.viewDeleteBtn.onclick = () => deletePost(post.id);
     dom.viewDlg.showModal();
-    document.body.classList.add('overflow-hidden');
+    document.body.classList.add('overflow-hidden'); // Lock scroll
 }
 
 function closeViewModal() {
     dom.viewDlg.close();
-    document.body.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden'); // Unlock scroll
     reopenViewOnSliderClose = false;
 }
 
@@ -807,9 +1025,17 @@ function openImageSlider(index) {
     if (sliderImages.length === 0) return;
     sliderIndex = index;
     updateSliderImage();
-    if (dom.viewDlg.open) { reopenViewOnSliderClose = true; dom.viewDlg.close(); }
+    
+    if (dom.viewDlg.open) {
+        reopenViewOnSliderClose = true; // Set BEFORE closing
+        dom.viewDlg.close();
+    }
+    
     dom.slider.classList.remove('hidden');
-    setTimeout(() => { dom.slider.classList.remove('slider-hidden'); dom.slider.classList.add('slider-visible'); }, 10);
+    setTimeout(() => {
+        dom.slider.classList.remove('slider-hidden');
+        dom.slider.classList.add('slider-visible');
+    }, 10);
 }
 
 function closeImageSlider() {
@@ -817,7 +1043,11 @@ function closeImageSlider() {
     dom.slider.classList.add('slider-hidden');
     setTimeout(() => {
         dom.slider.classList.add('hidden');
-        if (reopenViewOnSliderClose) { dom.viewDlg.showModal(); reopenViewOnSliderClose = false; }
+        if (reopenViewOnSliderClose) {
+            dom.viewDlg.showModal();
+            // document.body.classList.add('overflow-hidden'); // Already locked
+            reopenViewOnSliderClose = false;
+        }
     }, 300);
 }
 
@@ -832,24 +1062,20 @@ function updateSliderImage() {
     dom.sliderCounter.textContent = `${sliderIndex + 1} / ${sliderImages.length}`;
 }
 
-// --- IMAGE UPLOAD ---
+// --- IMAGE UPLOAD LOGIC ---
 function appendImages(input) {
-    if (input.files && input.files.length > 0) {
+    if (input.files) {
         const remaining = 3 - formImages.length;
         const filesToProcess = Array.from(input.files).slice(0, remaining);
         
         filesToProcess.forEach(file => {
             const reader = new FileReader();
-            reader.onload = (e) => { 
-                formImages.push(e.target.result); 
-                // ใช้ requestAnimationFrame เพื่อให้แน่ใจว่า DOM พร้อมอัปเดต
-                requestAnimationFrame(renderFormImages); 
+            reader.onload = (e) => {
+                formImages.push(e.target.result);
+                renderFormImages();
             };
             reader.readAsDataURL(file);
         });
-
-        // รีเซ็ตค่า input เพื่อให้สามารถเลือกไฟล์เดิมซ้ำได้ถ้าลบออกไปแล้ว
-        input.value = '';
     }
 }
 
@@ -858,71 +1084,42 @@ function renderFormImages() {
     formImages.forEach((src, idx) => {
         const div = document.createElement('div');
         div.className = "relative aspect-square rounded-2xl overflow-hidden group shadow-sm border border-stone-200";
-        div.innerHTML = `<img src="${src}" class="w-full h-full object-cover">
-            <button onclick="removeImage(${idx})" class="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center transition-all"><i class="fa-solid fa-times"></i></button>`;
+        div.innerHTML = `
+            <img src="${src}" class="w-full h-full object-cover">
+            <button onclick="removeImage(${idx})" class="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center transition-all"><i class="fa-solid fa-times"></i></button>
+        `;
         dom.previewList.appendChild(div);
     });
+    
     dom.imgCount.textContent = `${formImages.length}/3`;
-    dom.uploadBtn.classList.toggle('hidden', formImages.length >= 3);
+    if (formImages.length >= 3) dom.uploadBtn.classList.add('hidden');
+    else dom.uploadBtn.classList.remove('hidden');
 }
 
-function removeImage(idx) { formImages.splice(idx, 1); renderFormImages(); }
+function removeImage(idx) {
+    formImages.splice(idx, 1);
+    renderFormImages();
+}
 
-// --- VALIDATION & SAVE / DELETE ---
+// --- SAVE / DELETE ---
 function validateForm() {
     let isValid = true;
-    let missingFields = [];
-
-    // ล้างสถานะ Error เดิม
-    document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
-
-    // ตรวจสอบหัวข้อ
-    if (!dom.title.value.trim()) { 
-        dom.title.classList.add('input-error'); 
-        missingFields.push('หัวข้อประกาศ');
-        isValid = false; 
-    }
-    // ตรวจสอบราคา
-    if (!dom.price.value) { 
-        dom.price.classList.add('input-error'); 
-        missingFields.push('ราคาขาย');
-        isValid = false; 
-    }
-    // ตรวจสอบจังหวัด
-    if (!dom.province.value) { 
-        dom.province.classList.add('input-error'); 
-        missingFields.push('จังหวัด');
-        isValid = false; 
-    }
-
-    // หากมีข้อมูลไม่ครบ ให้เด้ง Alert
-    if (!isValid) {
-        // ปิด Dialog ชั่วคราวเพื่อให้เห็น Alert ชัดเจน และไม่ล้างข้อมูล
-        dom.dlg.close(); 
-        
-        Swal.fire({
-            icon: 'error',
-            title: 'กรอกข้อมูลไม่ครบถ้วน',
-            text: 'กรุณากรอก: ' + missingFields.join(', '),
-            confirmButtonColor: '#10b981',
-            confirmButtonText: 'ตกลง'
-        }).then(() => {
-            // เปิด Dialog กลับมาพร้อมข้อมูลเดิมเมื่อปิด Alert
-            dom.dlg.showModal();
-            document.body.classList.add('overflow-hidden');
-        });
-    }
-
+    if (!dom.title.value.trim()) { dom.title.classList.add('input-error'); isValid = false; }
+    if (!dom.price.value) { dom.price.classList.add('input-error'); isValid = false; }
+    if (!dom.province.value) { dom.province.classList.add('input-error'); isValid = false; }
     return isValid;
 }
 
 async function savePost() {
-    // เรียก validateForm ซึ่งจะเด้ง Alert เองถ้าข้อมูลไม่ครบ
-    if (!validateForm()) return;
+    if (!validateForm()) {
+        setTimeout(() => document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error')), 500);
+        return;
+    }
 
     const btn = document.getElementById('btnSave');
     const txt = document.getElementById('btnSaveText');
     const icon = document.getElementById('btnSaveIcon');
+    
     const originalText = txt.textContent;
     const originalIconClass = icon.className;
     
@@ -946,17 +1143,37 @@ async function savePost() {
 
     try {
         await fetch(API_URL, { method: 'POST', body: formData });
+        
+        // Optimistic Update
         const newPost = {
-            id: Date.now(), title: dom.title.value, price: Number(dom.price.value),
-            province: dom.province.value, address: dom.address.value, contact_name: dom.contactName.value,
-            phone: dom.phone.value, line_id: dom.lineId.value, body: dom.body.value,
+            id: Date.now(), 
+            title: dom.title.value,
+            price: Number(dom.price.value),
+            province: dom.province.value,
+            address: dom.address.value,
+            contact_name: dom.contactName.value,
+            phone: dom.phone.value,
+            line_id: dom.lineId.value,
+            body: dom.body.value,
             lat: dom.lat.value ? parseFloat(dom.lat.value) : null,
-            lng: dom.lng.value ? parseFloat(dom.lng.value) : null, images: formImages
+            lng: dom.lng.value ? parseFloat(dom.lng.value) : null,
+            images: formImages
         };
+
         posts.unshift(newPost);
         applyFilters();
-        Swal.fire({ icon: 'success', title: 'ลงประกาศสำเร็จ!', text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อยแล้ว', timer: 2000, showConfirmButton: false });
+
+        Swal.fire({
+            icon: 'success',
+            title: 'ลงประกาศสำเร็จ!',
+            text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อยแล้ว',
+            timer: 2000,
+            showConfirmButton: false,
+            confirmButtonColor: '#10b981'
+        });
+        
         closeModal();
+
     } catch (e) {
         console.error(e);
         Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
@@ -969,11 +1186,18 @@ async function savePost() {
 
 function deletePost(id) {
     closeViewModal();
+    
     Swal.fire({
-        title: 'ยืนยันการลบ?', text: "คุณต้องการลบประกาศนี้ใช่หรือไม่", icon: 'warning',
-        showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#e5e7eb',
-        cancelButtonText: '<span class="text-gray-600">ยกเลิก</span>', confirmButtonText: 'ลบประกาศ',
-        reverseButtons: true, showLoaderOnConfirm: true,
+        title: 'ยืนยันการลบ?',
+        text: "คุณต้องการลบประกาศนี้ใช่หรือไม่",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#e5e7eb',
+        cancelButtonText: '<span class="text-gray-600">ยกเลิก</span>',
+        confirmButtonText: 'ลบประกาศ',
+        reverseButtons: true,
+        showLoaderOnConfirm: true,
         preConfirm: async () => {
              try {
                  const fd = new FormData();
@@ -982,13 +1206,20 @@ function deletePost(id) {
                  const res = await fetch(API_URL, { method: 'POST', body: fd });
                  if (!res.ok) throw new Error();
                  return true;
-             } catch (error) { Swal.showValidationMessage(`เกิดข้อผิดพลาด`); }
+             } catch (error) {
+                 Swal.showValidationMessage(`เกิดข้อผิดพลาด`);
+             }
         }
     }).then((result) => {
         if (result.isConfirmed) {
             posts = posts.filter(p => p.id !== id);
             applyFilters();
-            Swal.fire({ title: 'ลบสำเร็จ', icon: 'success', timer: 1500, showConfirmButton: false });
+            Swal.fire({
+                title: 'ลบสำเร็จ', 
+                icon: 'success', 
+                timer: 1500, 
+                showConfirmButton: false
+            });
         }
     });
 }
@@ -1002,11 +1233,16 @@ function fillDemoData() {
     dom.phone.value = "081-123-4567";
     dom.lineId.value = "land_owner99";
     dom.body.value = "ขายที่ดิน 10 ไร่ 2 งาน \n- ถมแล้วเต็มพื้นที่\n- ไฟฟ้า 3 เฟส\n- ติดถนนลาดยาง 4 เลน\n- ใกล้ทางด่วน";
-    updateMarker(14.0600 + (Math.random() * 0.05), 100.6000 + (Math.random() * 0.05));
+    
+    const lat = 14.0600 + (Math.random() * 0.05);
+    const lng = 100.6000 + (Math.random() * 0.05);
+    updateMarker(lat, lng);
+    
     formImages = ["https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"];
     renderFormImages();
 }
 
+// Start App
 init();
 </script>
 </body>

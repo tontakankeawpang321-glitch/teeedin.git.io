@@ -44,33 +44,33 @@
 </script>
 
 <style>
-    body { font-family: 'Prompt', sans-serif; background-color: #f5f5f4; -webkit-tap-highlight-color: transparent; color: #1c1917; }
+    body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; color: #1e293b; touch-action: manipulation; }
     
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #f5f5f4; }
-    ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #059669; }
+    /* Custom Scrollbar - Slimmer */
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     
-    /* Dialog Animation - Updated per request */
+    /* Dialog Animation - Fast & Simple */
     dialog {
-        transition: opacity 0.3s ease, transform 0.3s ease;
+        transition: opacity 0.2s ease-out, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         opacity: 0;
-        transform: scale(0.95) translateY(10px);
-        z-index: 9999; /* Added z-index */
+        transform: scale(0.96);
+        z-index: 9999;
+        border: none;
+        outline: none;
     }
     dialog[open] {
         opacity: 1;
-        transform: scale(1) translateY(0);
+        transform: scale(1);
     }
-    /* Removed @starting-style block */
-    dialog::backdrop { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 9998; }
+    dialog::backdrop { background: rgba(0, 0, 0, 0.4); z-index: 9998; }
     
     .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
     .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     
-    /* Image Slider Styles */
-    #imageSlider { transition: opacity 0.3s ease; }
+    /* Optimized Image Slider */
+    #imageSlider { transition: opacity 0.2s ease; }
     .slider-hidden { opacity: 0; pointer-events: none; }
     .slider-visible { opacity: 1; pointer-events: auto; }
 
@@ -82,9 +82,10 @@
     .leaflet-pane { z-index: 10 !important; }
     .leaflet-bottom { z-index: 20 !important; }
     
-    /* Animations */
-    .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+    /* Minimal Hover Effect (Desktop Only) */
+    @media (hover: hover) {
+        .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    }
 
     .input-error {
         animation: shake 0.3s ease-in-out;
@@ -96,6 +97,15 @@
         25% { transform: translateX(-4px); }
         75% { transform: translateX(4px); }
     }
+    
+    /* Utility for hiding scrollbar but keeping functionality */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
 </style>
 </head>
 <body class="min-h-screen flex flex-col pb-safe bg-stone-50 pb-20 md:pb-0">
@@ -106,7 +116,7 @@
       <div class="flex items-center gap-4">
           <!-- Logo / Refresh -->
           <div class="flex items-center gap-3 cursor-pointer group" onclick="refreshApp()">
-            <div class="bg-gradient-to-br from-brand-600 to-brand-500 text-white w-10 h-10 flex items-center justify-center rounded-xl shadow-lg shadow-brand-500/30 group-hover:rotate-12 transition-transform duration-300">
+            <div class="bg-gradient-to-br from-brand-600 to-brand-500 text-white w-10 h-10 flex items-center justify-center rounded-xl shadow-sm group-hover:rotate-12 transition-transform duration-300">
                 <i class="fa-solid fa-earth-asia text-lg"></i>
             </div>
             <div class="flex flex-col">
@@ -231,7 +241,7 @@
 </footer>
 
 <!-- Bottom Navigation Bar (Mobile Only) -->
-<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 px-6 py-3 flex justify-between items-center md:hidden z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+<div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-stone-200 px-6 py-3 flex justify-between items-center md:hidden z-50 shadow-sm">
     <button onclick="window.scrollTo({top:0, behavior:'smooth'}); refreshApp();" class="flex flex-col items-center gap-1 text-stone-400 hover:text-brand-600 active:text-brand-600 transition-colors">
         <i class="fa-solid fa-home text-xl"></i>
         <span class="text-[10px] font-medium">หน้าหลัก</span>
@@ -267,74 +277,72 @@
     </div>
 </div>
 
-<!-- View Details Dialog -->
-<dialog id="viewDlg" class="bg-white rounded-3xl shadow-2xl p-0 w-[95%] max-w-2xl m-auto backdrop:bg-stone-900/40 max-h-[90vh] overflow-hidden border border-stone-100">
-    <div class="relative">
-        <!-- Close Button Absolute -->
-        <button onclick="closeViewModal()" class="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white w-8 h-8 rounded-full backdrop-blur flex items-center justify-center transition-all"><i class="fa-solid fa-xmark"></i></button>
-        
+<!-- View Details Dialog - Refined for Mobile -->
+<dialog id="viewDlg" class="bg-white rounded-2xl shadow-xl p-0 w-[95%] max-w-xl m-auto max-h-[90vh] overflow-hidden">
+    <div class="relative flex flex-col h-full max-h-[90vh]">
         <!-- Header Image Area -->
-        <div id="viewImageHeader" class="w-full h-64 bg-stone-200 relative group cursor-pointer" onclick="if(sliderImages.length>0) openImageSlider(0)">
-            <img id="viewMainImage" src="" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-            <div class="absolute bottom-4 left-5 text-white">
-                <span id="viewPriceHeader" class="text-2xl font-bold block drop-shadow-md">฿0</span>
-                <span class="text-sm opacity-90 font-light"><i class="fa-solid fa-images"></i> ดูรูปภาพทั้งหมด</span>
+        <div id="viewImageHeader" class="w-full h-56 bg-stone-100 relative group cursor-pointer flex-shrink-0" onclick="if(sliderImages.length>0) openImageSlider(0)">
+            <img id="viewMainImage" src="" class="w-full h-full object-cover transition-opacity duration-300">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60"></div>
+            <!-- Close Button -->
+            <button onclick="closeViewModal()" class="absolute top-3 right-3 z-20 bg-black/30 hover:bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all backdrop-blur-sm"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div class="absolute bottom-3 left-4 text-white">
+                <span id="viewPriceHeader" class="text-2xl font-bold block drop-shadow-sm">฿0</span>
+                <span class="text-xs opacity-90"><i class="fa-solid fa-images"></i> ดูรูปภาพทั้งหมด</span>
             </div>
-            <div class="absolute top-4 left-4 bg-brand-500/90 backdrop-blur text-white text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider shadow-lg">
-                For Sale
+            <div class="absolute top-3 left-4 bg-brand-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider shadow-sm">
+                ขาย
             </div>
         </div>
 
-        <div class="p-6 overflow-y-auto max-h-[calc(90vh-256px)] custom-scrollbar">
+        <div class="p-5 overflow-y-auto custom-scrollbar flex-grow">
             
             <!-- Gallery Strip -->
             <div class="mb-4">
-                 <h4 class="text-xs font-bold text-stone-500 mb-2">รูปภาพเพิ่มเติม</h4>
-                 <div id="viewImages" class="flex gap-2 overflow-x-auto pb-2 snap-x"></div>
+                 <div id="viewImages" class="flex gap-2 overflow-x-auto pb-1 snap-x no-scrollbar"></div>
             </div>
 
-            <div class="flex justify-between items-start mb-4 gap-4">
-                <h2 id="viewTitle" class="text-xl font-bold text-stone-800 leading-snug"></h2>
-                <button id="btnDeletePost" class="text-stone-300 hover:text-red-500 transition-colors p-2" title="ลบประกาศ"><i class="fa-solid fa-trash-can"></i></button>
+            <div class="flex justify-between items-start mb-4 gap-3">
+                <h2 id="viewTitle" class="text-lg font-bold text-stone-800 leading-snug"></h2>
+                <button id="btnDeletePost" class="text-stone-300 hover:text-red-500 transition-colors p-1" title="ลบประกาศ"><i class="fa-solid fa-trash-can"></i></button>
             </div>
 
-            <!-- Contact Buttons Grid (Will be populated by JS) -->
-            <div id="viewContactActions" class="flex flex-col gap-3 mb-6 hidden"></div>
+            <!-- Contact Buttons (Copy Mode) -->
+            <div id="viewContactActions" class="flex flex-col gap-2.5 mb-5 hidden"></div>
 
             <!-- Key Info Grid -->
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div class="bg-stone-50 p-3 rounded-2xl border border-stone-100 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-brand-600 shadow-sm flex-shrink-0"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="grid grid-cols-2 gap-2 mb-5">
+                <div class="bg-stone-50 p-2.5 rounded-xl border border-stone-200 flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-white border border-stone-100 flex items-center justify-center text-brand-600 flex-shrink-0"><i class="fa-solid fa-location-dot text-xs"></i></div>
                     <div class="min-w-0">
-                        <p class="text-[10px] text-stone-500 uppercase font-bold">ที่ตั้ง</p>
-                        <p id="viewLocation" class="text-sm font-medium text-stone-800 truncate"></p>
+                        <p class="text-[9px] text-stone-400 uppercase font-bold">ที่ตั้ง</p>
+                        <p id="viewLocation" class="text-xs font-medium text-stone-700 truncate"></p>
                     </div>
                 </div>
-                <div class="bg-stone-50 p-3 rounded-2xl border border-stone-100 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-brand-600 shadow-sm flex-shrink-0"><i class="fa-solid fa-user"></i></div>
+                <div class="bg-stone-50 p-2.5 rounded-xl border border-stone-200 flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-white border border-stone-100 flex items-center justify-center text-brand-600 flex-shrink-0"><i class="fa-solid fa-user text-xs"></i></div>
                     <div class="min-w-0">
-                        <p class="text-[10px] text-stone-500 uppercase font-bold">ติดต่อ</p>
-                        <p id="viewContact" class="text-sm font-medium text-stone-800 truncate"></p>
+                        <p class="text-[9px] text-stone-400 uppercase font-bold">ติดต่อ</p>
+                        <p id="viewContact" class="text-xs font-medium text-stone-700 truncate"></p>
                     </div>
                 </div>
             </div>
 
-            <div class="mb-6">
-                <h4 class="text-sm font-bold text-stone-800 mb-3 flex items-center gap-2 border-b border-stone-100 pb-2">
-                    <i class="fa-solid fa-align-left text-brand-500"></i> รายละเอียดทรัพย์สิน
+            <div class="mb-5">
+                <h4 class="text-sm font-bold text-stone-800 mb-2 flex items-center gap-2 border-b border-stone-100 pb-2">
+                    รายละเอียด
                 </h4>
                 <div id="viewBody" class="whitespace-pre-line text-sm leading-relaxed text-stone-600 font-light"></div>
             </div>
 
             <!-- Map Section -->
-            <div id="viewMapContainer" class="hidden rounded-2xl overflow-hidden border border-stone-200">
-                <div class="bg-stone-100 px-4 py-2 border-b border-stone-200 flex justify-between items-center">
-                    <h4 class="text-xs font-bold text-stone-700"><i class="fa-solid fa-map-location text-brand-500 mr-1"></i> แผนที่</h4>
-                    <!-- REMOVED target="_blank" -->
-                    <a id="viewMapLink" href="#" class="text-[10px] text-brand-600 hover:underline"><i class="fa-solid fa-external-link-alt"></i> เปิด Google Maps</a>
+            <div id="viewMapContainer" class="hidden rounded-xl overflow-hidden border border-stone-200">
+                <div class="bg-stone-50 px-3 py-1.5 border-b border-stone-200 flex justify-between items-center">
+                    <h4 class="text-xs font-bold text-stone-600"><i class="fa-solid fa-map-location text-brand-500 mr-1"></i> แผนที่</h4>
+                    <a id="viewMapLink" href="#" class="text-[10px] text-brand-600 font-medium"><i class="fa-solid fa-external-link-alt"></i> นำทาง</a>
                 </div>
-                <div class="h-64 w-full relative">
+                <div class="h-48 w-full relative">
                     <div id="viewMap" class="h-full w-full"></div>
                 </div>
             </div>
@@ -344,36 +352,36 @@
 </dialog>
 
 <!-- Favorites Dialog -->
-<dialog id="favDlg" class="bg-white rounded-3xl shadow-2xl p-0 w-[95%] max-w-lg m-auto backdrop:bg-stone-900/40 max-h-[90vh] overflow-hidden border border-stone-100">
-    <div class="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-white sticky top-0 z-10">
+<dialog id="favDlg" class="bg-white rounded-2xl shadow-xl p-0 w-[95%] max-w-lg m-auto max-h-[90vh] overflow-hidden">
+    <div class="px-5 py-4 border-b border-stone-100 flex justify-between items-center bg-white sticky top-0 z-10">
         <div>
             <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2"><i class="fa-solid fa-heart text-red-500"></i> รายการโปรด</h3>
             <p class="text-[10px] text-stone-400">ประกาศที่คุณบันทึกไว้</p>
         </div>
-        <button onclick="document.getElementById('favDlg').close(); document.body.classList.remove('overflow-hidden');" class="w-8 h-8 rounded-full hover:bg-stone-100 flex items-center justify-center text-stone-400 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <button onclick="document.getElementById('favDlg').close(); document.body.classList.remove('overflow-hidden');" class="w-8 h-8 rounded-full bg-stone-50 text-stone-400 flex items-center justify-center transition-colors hover:bg-stone-100"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div id="favList" class="p-6 overflow-y-auto max-h-[60vh] custom-scrollbar space-y-4">
+    <div id="favList" class="p-5 overflow-y-auto max-h-[60vh] custom-scrollbar space-y-3">
         <!-- Favorites will be rendered here -->
     </div>
-    <div class="p-4 bg-stone-50 border-t border-stone-100 text-center text-xs text-stone-400">
+    <div class="p-3 bg-stone-50 border-t border-stone-100 text-center text-xs text-stone-400">
         ข้อมูลถูกบันทึกในอุปกรณ์นี้
     </div>
 </dialog>
 
 <!-- Form Modal -->
-<dialog id="dlg" class="bg-white rounded-3xl shadow-2xl p-0 w-[95%] max-w-lg m-auto backdrop:bg-stone-900/40 max-h-[90vh] overflow-hidden">
-    <div class="px-6 py-4 border-b border-stone-100 flex justify-between items-center bg-white sticky top-0 z-10">
+<dialog id="dlg" class="bg-white rounded-2xl shadow-xl p-0 w-[95%] max-w-lg m-auto max-h-[90vh] overflow-hidden">
+    <div class="px-5 py-4 border-b border-stone-100 flex justify-between items-center bg-white sticky top-0 z-10">
         <div>
             <h3 id="dlgTitle" class="text-lg font-bold text-stone-800">ลงประกาศขายที่ดิน</h3>
             <p class="text-[10px] text-stone-400">กรอกข้อมูลให้ครบถ้วนเพื่อความน่าเชื่อถือ</p>
         </div>
         <div class="flex items-center gap-2">
-            <button onclick="fillDemoData()" class="text-[10px] bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded-full hover:bg-yellow-100 transition-colors font-bold border border-yellow-200"><i class="fa-solid fa-magic mr-1"></i> ตัวอย่าง</button>
-            <button onclick="closeModal()" class="w-8 h-8 rounded-full hover:bg-stone-100 flex items-center justify-center text-stone-400 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <button onclick="fillDemoData()" class="text-[10px] bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full border border-amber-100 font-bold"><i class="fa-solid fa-magic mr-1"></i> ตัวอย่าง</button>
+            <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-stone-50 text-stone-400 flex items-center justify-center transition-colors hover:bg-stone-100"><i class="fa-solid fa-xmark"></i></button>
         </div>
     </div>
     
-    <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)] custom-scrollbar space-y-5">
+    <div class="p-5 overflow-y-auto max-h-[calc(90vh-130px)] custom-scrollbar space-y-5">
         <input type="hidden" id="postId">
         <input type="hidden" id="lat">
         <input type="hidden" id="lng">
@@ -383,7 +391,7 @@
             <input id="title" type="text" class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all text-sm text-stone-800" placeholder="เช่น ขายที่ดิน 5 ไร่ ติดถนนใหญ่...">
         </div>
         
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
              <div>
                 <label class="block text-xs font-bold text-stone-700 mb-2">จังหวัด <span class="text-red-500">*</span></label>
                 <div class="relative">
@@ -400,7 +408,7 @@
         </div>
 
         <!-- Location Section -->
-        <div class="bg-brand-50/50 p-4 rounded-2xl border border-brand-100/50">
+        <div class="bg-brand-50/50 p-4 rounded-xl border border-brand-100/50">
             <label class="block text-xs font-bold text-stone-700 mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-location-dot text-brand-500"></i> ปักหมุดที่ดิน (ระบุพิกัด)
             </label>
@@ -418,7 +426,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-xs font-bold text-stone-700 mb-2">ชื่อผู้ติดต่อ</label>
                 <div class="relative">
@@ -435,7 +443,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-xs font-bold text-stone-700 mb-2">เบอร์โทรศัพท์</label>
                 <div class="relative">
@@ -464,19 +472,18 @@
             </div>
             <div class="grid grid-cols-3 gap-3">
                 <div id="previewList" class="contents"></div>
-                <label id="uploadBtn" class="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-stone-300 rounded-2xl cursor-pointer bg-stone-50 hover:bg-brand-50 hover:border-brand-400 transition-all text-stone-400 group">
+                <label id="uploadBtn" class="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-stone-300 rounded-xl cursor-pointer bg-stone-50 hover:bg-brand-50 hover:border-brand-400 transition-all text-stone-400 group">
                     <i class="fa-solid fa-cloud-arrow-up text-2xl mb-1 group-hover:scale-110 transition-transform text-brand-500"></i>
                     <span class="text-[10px] font-medium group-hover:text-brand-600">เพิ่มรูป</span>
                     <input id="img" type="file" class="hidden" accept="image/*" multiple onchange="appendImages(this)">
                 </label>
             </div>
-            <p class="text-[10px] text-stone-400 mt-2 text-center">* แนะนำรูปแนวนอนเพื่อความสวยงาม</p>
         </div>
     </div>
     
     <div class="p-4 bg-white border-t border-stone-100 flex gap-3">
         <button onclick="closeModal()" class="flex-1 py-3 border border-stone-200 rounded-xl hover:bg-stone-50 text-sm font-bold text-stone-600 transition-colors">ยกเลิก</button>
-        <button onclick="savePost()" id="btnSave" class="flex-1 py-3 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-xl hover:shadow-lg hover:shadow-brand-500/30 flex items-center justify-center gap-2 text-sm font-bold transition-all active:scale-95">
+        <button onclick="savePost()" id="btnSave" class="flex-1 py-3 bg-gradient-to-r from-brand-600 to-brand-500 text-white rounded-xl hover:shadow-md flex items-center justify-center gap-2 text-sm font-bold transition-all active:scale-95">
             <span id="btnSaveText">ลงประกาศเลย</span> <i id="btnSaveIcon" class="fa-solid fa-arrow-right"></i>
         </button>
     </div>
@@ -487,7 +494,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxFPLZc1F9OAG0W9KJtv7MRVb8sqOU8YX5dUrIyyKYPJHXytEpHbWGtY7qlIJ02xyP6Rg/exec";
 const PROVINCES = ["กรุงเทพมหานคร", "กระบี่", "กาญจนบุรี", "กาฬสินธุ์", "กำแพงเพชร", "ขอนแก่น", "จันทบุรี", "ฉะเชิงเทรา", "ชลบุรี", "ชัยนาท", "ชัยภูมิ", "ชุมพร", "เชียงราย", "เชียงใหม่", "ตรัง", "ตราด", "ตาก", "นครนายก", "นครปฐม", "นครพนม", "นครราชสีมา", "นครศรีธรรมราช", "นครสวรรค์", "นนทบุรี", "นราธิวาส", "น่าน", "บึงกาฬ", "บุรีรัมย์", "ปทุมธานี", "ประจวบคีรีขันธ์", "ปราจีนบุรี", "ปัตตานี", "พระนครศรีอยุธยา", "พะเยา", "พังงา", "พัทลุง", "พิจิตร", "พิษณุโลก", "เพชรบุรี", "เพชรบูรณ์", "แพร่", "ภูเก็ต", "มหาสารคาม", "มุกดาหาร", "แม่ฮ่องสอน", "ยโสธร", "ยะลา", "ร้อยเอ็ด", "ระนอง", "ระยอง", "ราชบุรี", "ลพบุรี", "ลำปาง", "ลำพูน", "เลย", "ศรีสะเกษ", "สกลนคร", "สงขลา", "สตูล", "สมุทรปราการ", "สมุทรสงคราม", "สมุทรสาคร", "สระแก้ว", "สระบุรี", "สิงห์บุรี", "สุโขทัย", "สุพรรณบุรี", "สุราษฎร์ธานี", "สุรินทร์", "หนองคาย", "หนองบัวลำภู", "อ่างทอง", "อำนาจเจริญ", "อุดรธานี", "อุตรดิตถ์", "อุทัยธานี", "อุบลราชธานี"].sort();
 
-// Mock Data
 const defaultPosts = [
     {
         id: 101,
@@ -510,7 +516,7 @@ let posts = [];
 let filteredPosts = [];
 let favorites = JSON.parse(localStorage.getItem('landmarket_favs')) || [];
 let currentPage = 1;
-const ITEMS_PER_PAGE = 18; // Increased for 3 column grid
+const ITEMS_PER_PAGE = 18; 
 
 let formImages = [];
 let sliderImages = [];
@@ -519,6 +525,7 @@ let map, marker;
 let viewMap, viewMarker;
 let reopenViewOnSliderClose = false;
 
+// DOM Cache
 const dom = {
     loading: document.getElementById('loading'), board: document.getElementById('board'),
     pagination: document.getElementById('pagination'), resultCount: document.getElementById('resultCount'),
@@ -537,7 +544,6 @@ const dom = {
     lat: document.getElementById('lat'), lng: document.getElementById('lng'),
     latlng_display: document.getElementById('latlng_display'),
     
-    // Updated Filter References
     filterProvinceHero: document.getElementById('hero_province'),
     filterAmphoeHero: document.getElementById('hero_amphoe'),
     filterAmphoeMobile: document.getElementById('mobile_amphoe'),
@@ -546,7 +552,7 @@ const dom = {
     sliderCounter: document.getElementById('sliderCounter'),
     viewTitle: document.getElementById('viewTitle'), viewPriceHeader: document.getElementById('viewPriceHeader'),
     viewContact: document.getElementById('viewContact'), viewLocation: document.getElementById('viewLocation'),
-    viewContactActions: document.getElementById('viewContactActions'), viewPhoneLink: document.getElementById('viewPhoneLink'), viewLineLink: document.getElementById('viewLineLink'),
+    viewContactActions: document.getElementById('viewContactActions'),
     viewBody: document.getElementById('viewBody'), viewMapContainer: document.getElementById('viewMapContainer'),
     viewImages: document.getElementById('viewImages'), viewDeleteBtn: document.getElementById('btnDeletePost'),
     viewMainImage: document.getElementById('viewMainImage'), viewImageHeader: document.getElementById('viewImageHeader')
@@ -558,17 +564,17 @@ function init() {
     loadPosts(); 
     initMap();
     
-    // Polyfill registration
+    // Register Dialog Polyfill
     [dom.dlg, dom.viewDlg, dom.favDlg].forEach(d => {
-        dialogPolyfill.registerDialog(d);
+        if(window.dialogPolyfill) dialogPolyfill.registerDialog(d);
     });
 
-    // Event Listeners for Filters
+    // Filters
     dom.filterProvinceHero.addEventListener('change', applyFilters);
     dom.filterAmphoeHero.addEventListener('input', debounce(applyFilters, 300));
     dom.filterAmphoeMobile.addEventListener('input', debounce(applyFilters, 300));
 
-    // Handle body scroll lock on dialog close (e.g. Escape key)
+    // Scroll Lock on Dialog
     dom.dlg.addEventListener('close', () => document.body.classList.remove('overflow-hidden'));
     dom.viewDlg.addEventListener('close', () => {
         if(!reopenViewOnSliderClose) document.body.classList.remove('overflow-hidden');
@@ -585,29 +591,190 @@ function refreshApp() {
 
 function populateProvinces() {
     const options = PROVINCES.map(p => `<option value="${p}">${p}</option>`).join('');
-    
-    // Populate Modal Dropdown
     dom.province.innerHTML = `<option value="">เลือกจังหวัด</option>${options}`;
-    
-    // Populate Hero Filter Dropdown
     dom.filterProvinceHero.innerHTML = `<option value="all">ทุกจังหวัด</option>${options}`;
 }
 
-// --- FAVORITES LOGIC ---
+// --- COPY UTILS ---
+function escapeHtml(text) {
+  if (!text) return "";
+  return String(text).replace(/'/g, "\\'").replace(/"/g, "&quot;");
+}
+
+function copyToClipboard(text, label) {
+    // Attempt Modern API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => showCopySuccess(label)).catch(() => fallbackCopy(text, label));
+    } else {
+        fallbackCopy(text, label);
+    }
+}
+
+function fallbackCopy(text, label) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.setAttribute('readonly', '');
+    document.body.appendChild(textArea);
+    
+    // Select text specifically for iOS
+    const range = document.createRange();
+    range.selectNodeContents(textArea);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    textArea.setSelectionRange(0, 999999);
+    
+    try {
+        const successful = document.execCommand('copy');
+        if(successful) showCopySuccess(label);
+        else Swal.fire({icon:'error', title:'คัดลอกไม่สำเร็จ', toast:true, position:'top', timer:2000, showConfirmButton:false});
+    } catch(err) {
+        Swal.fire({icon:'error', title:'คัดลอกไม่สำเร็จ', toast:true, position:'top', timer:2000, showConfirmButton:false});
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+function showCopySuccess(label) {
+    Swal.fire({
+        icon: 'success',
+        title: 'คัดลอกแล้ว',
+        text: `คัดลอก ${label} เรียบร้อย`,
+        toast: true,
+        position: 'top',
+        showConfirmButton: false,
+        timer: 1500,
+        customClass: { popup: 'rounded-xl shadow-none border border-stone-200 text-sm' }
+    });
+}
+
+// --- VIEW POST ---
+function viewPost(id) {
+    const post = posts.find(p => p.id === id);
+    if (!post) return;
+    
+    dom.viewTitle.textContent = post.title;
+    dom.viewPriceHeader.textContent = '฿' + parseInt(post.price).toLocaleString();
+    dom.viewContact.textContent = post.contact_name || '-';
+    dom.viewLocation.textContent = (post.address ? post.address + ' ' : '') + post.province;
+    dom.viewBody.textContent = post.body || '-';
+    
+    // Generate Contact Cards
+    const hasPhone = !!post.phone && String(post.phone).trim() !== '';
+    const hasLine = !!post.line_id && String(post.line_id).trim() !== '';
+    const container = document.getElementById('viewContactActions');
+    container.innerHTML = ''; 
+    
+    if (hasPhone || hasLine) {
+        container.classList.remove('hidden');
+        let html = '';
+        
+        if (hasLine) {
+            const cleanLine = String(post.line_id).trim();
+            const safeLine = escapeHtml(cleanLine);
+            html += `
+            <div onclick="copyToClipboard('${safeLine}', 'Line ID')" class="flex items-center p-3 bg-white rounded-xl border border-stone-200 active:bg-stone-50 active:scale-[0.99] transition-all cursor-pointer shadow-sm">
+                <div class="w-9 h-9 bg-[#06C755] rounded-full flex items-center justify-center text-white shrink-0">
+                    <i class="fa-brands fa-line text-lg"></i>
+                </div>
+                <div class="ml-3 flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <p class="text-[9px] text-stone-400 font-bold uppercase tracking-wide">Line ID</p>
+                        <span class="text-[9px] text-[#06C755] font-medium flex items-center gap-1"><i class="fa-regular fa-copy"></i> คัดลอก</span>
+                    </div>
+                    <p class="text-stone-800 font-bold text-sm truncate mt-0.5">${cleanLine}</p>
+                </div>
+            </div>`;
+        }
+        
+        if (hasPhone) {
+            const phoneText = String(post.phone);
+            const safePhone = escapeHtml(phoneText);
+            html += `
+            <div onclick="copyToClipboard('${safePhone}', 'เบอร์โทรศัพท์')" class="flex items-center p-3 bg-white rounded-xl border border-stone-200 active:bg-stone-50 active:scale-[0.99] transition-all cursor-pointer shadow-sm">
+                <div class="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center text-white shrink-0">
+                    <i class="fa-solid fa-phone text-sm"></i>
+                </div>
+                <div class="ml-3 flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <p class="text-[9px] text-stone-400 font-bold uppercase tracking-wide">เบอร์โทรศัพท์</p>
+                        <span class="text-[9px] text-blue-500 font-medium flex items-center gap-1"><i class="fa-regular fa-copy"></i> คัดลอก</span>
+                    </div>
+                    <p class="text-stone-800 font-bold text-sm truncate mt-0.5">${phoneText}</p>
+                </div>
+            </div>`;
+        }
+        container.innerHTML = html;
+    } else {
+        container.classList.add('hidden');
+    }
+    
+    // Images
+    dom.viewImages.innerHTML = '';
+    sliderImages = post.images && post.images.length ? post.images : [];
+    
+    if (sliderImages.length > 0) {
+        dom.viewMainImage.src = sliderImages[0];
+        sliderImages.forEach((url) => {
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = "h-14 w-20 rounded-lg object-cover cursor-pointer border border-stone-200 active:opacity-70 transition-opacity";
+            img.onclick = () => { dom.viewMainImage.src = url; };
+            dom.viewImages.appendChild(img);
+        });
+        dom.viewImageHeader.onclick = () => openImageSlider(0);
+    } else {
+        dom.viewMainImage.src = 'https://placehold.co/600x400?text=No+Image';
+        dom.viewImages.innerHTML = '<span class="text-xs text-stone-400 p-2">ไม่มีรูปภาพเพิ่มเติม</span>';
+    }
+    
+    // Map
+    if (post.lat && post.lng) {
+        dom.viewMapContainer.classList.remove('hidden');
+        if (!viewMap) {
+            viewMap = L.map('viewMap', {zoomControl: false});
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '' }).addTo(viewMap);
+        }
+        setTimeout(() => {
+            viewMap.invalidateSize();
+            viewMap.setView([post.lat, post.lng], 13);
+            if (viewMarker) viewMap.removeLayer(viewMarker);
+            viewMarker = L.marker([post.lat, post.lng]).addTo(viewMap);
+        }, 200);
+        
+        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${post.lat},${post.lng}`;
+        const mapLink = document.getElementById('viewMapLink');
+        mapLink.removeAttribute('href');
+        mapLink.onclick = (e) => {
+            e.preventDefault();
+            // Use window.open for external links in safe way
+            window.open(mapUrl, '_blank', 'noopener,noreferrer');
+        };
+    } else {
+        dom.viewMapContainer.classList.add('hidden');
+    }
+    
+    dom.viewDeleteBtn.onclick = () => deletePost(post.id);
+    dom.viewDlg.showModal();
+    document.body.classList.add('overflow-hidden');
+}
+
+function closeViewModal() {
+    dom.viewDlg.close();
+    document.body.classList.remove('overflow-hidden');
+    reopenViewOnSliderClose = false;
+}
+
+// --- FAVORITES & OTHER LOGIC ---
 function toggleFavorite(e, id) {
     if(e) e.stopPropagation();
-    
     const index = favorites.indexOf(id);
-    if (index === -1) {
-        favorites.push(id);
-        // Show temporary feedback (optional)
-    } else {
-        favorites.splice(index, 1);
-    }
+    if (index === -1) favorites.push(id);
+    else favorites.splice(index, 1);
     localStorage.setItem('landmarket_favs', JSON.stringify(favorites));
-    renderBoard(); // Re-render to update icons
-    
-    // If favorites dialog is open, refresh it
+    renderBoard();
     if(dom.favDlg.open) renderFavoritesList();
 }
 
@@ -620,56 +787,37 @@ function openFavorites() {
 function renderFavoritesList() {
     const favPosts = posts.filter(p => favorites.includes(p.id));
     dom.favList.innerHTML = '';
-    
     if (favPosts.length === 0) {
-        dom.favList.innerHTML = `
-            <div class="text-center py-8 text-stone-400">
-                <i class="fa-regular fa-heart text-4xl mb-2"></i>
-                <p>ยังไม่มีรายการโปรด</p>
-            </div>
-        `;
+        dom.favList.innerHTML = `<div class="text-center py-8 text-stone-400"><i class="fa-regular fa-heart text-3xl mb-2"></i><p>ยังไม่มีรายการโปรด</p></div>`;
         return;
     }
-    
     favPosts.forEach(p => {
         const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://placehold.co/400x300?text=No+Image';
         const item = document.createElement('div');
-        item.className = "flex gap-3 bg-stone-50 p-2 rounded-xl border border-stone-100 cursor-pointer hover:bg-stone-100 transition-colors";
-        item.onclick = () => {
-            dom.favDlg.close();
-            viewPost(p.id);
-        };
+        item.className = "flex gap-3 bg-stone-50 p-2 rounded-xl border border-stone-100 cursor-pointer active:bg-stone-100 transition-colors";
+        item.onclick = () => { dom.favDlg.close(); viewPost(p.id); };
         item.innerHTML = `
-            <img src="${imgUrl}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0">
+            <img src="${imgUrl}" class="w-16 h-16 object-cover rounded-lg flex-shrink-0">
             <div class="flex-grow min-w-0 flex flex-col justify-center">
                 <h4 class="font-bold text-stone-800 text-sm line-clamp-1">${p.title}</h4>
-                <p class="text-xs text-stone-500 truncate"><i class="fa-solid fa-location-dot"></i> ${p.province}</p>
                 <div class="flex justify-between items-center mt-1">
                     <span class="text-brand-600 font-bold text-sm">฿${formatPriceCompact(p.price)}</span>
-                    <button onclick="toggleFavorite(event, ${p.id})" class="text-red-500 hover:text-red-700 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm border border-stone-100"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="toggleFavorite(event, ${p.id})" class="text-red-500 w-8 h-8 flex items-center justify-center rounded-full active:bg-stone-200"><i class="fa-solid fa-trash"></i></button>
                 </div>
-            </div>
-        `;
+            </div>`;
         dom.favList.appendChild(item);
     });
 }
 
-// --- API LOADING ---
 async function loadPosts() {
     dom.loading.classList.remove('hidden');
     dom.board.classList.add('hidden');
     dom.pagination.classList.add('hidden');
-    dom.resultCount.textContent = '...';
-
     try {
         const response = await fetch(API_URL, { redirect: "follow" });
-        if (!response.ok) throw new Error('Network response was not ok');
-        
+        if (!response.ok) throw new Error('Network error');
         const data = await response.json();
-        
-        let rawData = [];
-        if (Array.isArray(data)) rawData = data;
-        else if (data.data && Array.isArray(data.data)) rawData = data.data;
+        let rawData = Array.isArray(data) ? data : (data.data || []);
         
         posts = rawData.map(item => ({
             id: item.id || Date.now() + Math.random(),
@@ -678,22 +826,16 @@ async function loadPosts() {
             province: item.province || 'ไม่ระบุ',
             address: item.address || '',
             contact_name: item.contact_name || '',
-            phone: item.phone ? String(item.phone) : '',
-            line_id: item.line_id ? String(item.line_id) : '',
+            phone: String(item.phone || ''),
+            line_id: String(item.line_id || ''),
             body: item.body || '',
             images: parseImages(item.images),
             lat: item.lat ? parseFloat(item.lat) : null,
             lng: item.lng ? parseFloat(item.lng) : null
         }));
-        
     } catch (error) {
-        console.error('API Error:', error);
+        console.error(error);
         posts = [...defaultPosts];
-        Swal.fire({
-             toast: true, position: 'top-end', icon: 'info', 
-             title: 'โหลดข้อมูลตัวอย่าง', text: 'ไม่สามารถเชื่อมต่อ Google Sheet ได้ในขณะนี้',
-             showConfirmButton: false, timer: 3000
-        });
     } finally {
         applyFilters();
         dom.loading.classList.add('hidden');
@@ -706,42 +848,21 @@ function parseImages(imgData) {
     if (!imgData) return [];
     if (Array.isArray(imgData)) return imgData;
     if (typeof imgData === 'string') {
-        try {
-            const parsed = JSON.parse(imgData);
-            if (Array.isArray(parsed)) return parsed;
-            return [imgData];
-        } catch (e) {
-            if (imgData.includes(',')) return imgData.split(',').map(s => s.trim());
-            return [imgData];
-        }
+        try { const p = JSON.parse(imgData); if(Array.isArray(p)) return p; return [imgData]; } 
+        catch (e) { return imgData.includes(',') ? imgData.split(',').map(s=>s.trim()) : [imgData]; }
     }
     return [];
 }
 
 function applyFilters() {
-    // Logic: Filter by Province (Hero) AND Amphoe (Hero or Mobile)
     const prov = dom.filterProvinceHero.value;
-    
-    // Combine search text from both desktop and mobile inputs (usually one is hidden/empty)
-    const qDesktop = dom.filterAmphoeHero.value.trim().toLowerCase();
-    const qMobile = dom.filterAmphoeMobile.value.trim().toLowerCase();
-    const query = qDesktop || qMobile;
+    const query = (dom.filterAmphoeHero.value || dom.filterAmphoeMobile.value).trim().toLowerCase();
     
     filteredPosts = posts.filter(p => {
-        // 1. Check Province
         const matchProv = prov === 'all' || p.province === prov;
-        
-        // 2. Check Amphoe/Text
-        let matchText = true;
-        if (query) {
-             matchText = (p.address && p.address.toLowerCase().includes(query)) || 
-                         (p.province && p.province.toLowerCase().includes(query)) ||
-                         (p.body && p.body.toLowerCase().includes(query));
-        }
-        
+        const matchText = !query || (p.address && p.address.toLowerCase().includes(query)) || (p.province && p.province.toLowerCase().includes(query));
         return matchProv && matchText;
     });
-    
     dom.resultCount.textContent = `${filteredPosts.length} รายการ`;
     currentPage = 1;
     renderBoard();
@@ -754,54 +875,33 @@ function renderBoard() {
     const pageData = filteredPosts.slice(start, end);
     
     if (pageData.length === 0) {
-        dom.board.innerHTML = `
-            <div class="col-span-full text-center py-16 flex flex-col items-center">
-                <div class="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center text-stone-300 mb-4">
-                    <i class="fa-solid fa-map-location-dot text-3xl"></i>
-                </div>
-                <h3 class="text-stone-500 font-bold">ไม่พบพื้นที่ที่คุณค้นหา</h3>
-                <p class="text-stone-400 text-sm">ลองค้นหาด้วยชื่ออำเภอหรือจังหวัดอื่น</p>
-            </div>`;
+        dom.board.innerHTML = `<div class="col-span-full text-center py-10 text-stone-400"><p>ไม่พบข้อมูล</p></div>`;
         return;
     }
 
     pageData.forEach(p => {
         const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://placehold.co/400x300?text=No+Image';
         const isFav = favorites.includes(p.id);
-        
         const card = document.createElement('div');
-        card.className = "bg-white rounded-2xl shadow-sm border border-stone-100 hover-lift overflow-hidden cursor-pointer group flex flex-col h-full relative";
+        card.className = "bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden cursor-pointer flex flex-col h-full relative active:scale-[0.98] transition-transform duration-100";
         card.onclick = () => viewPost(p.id);
-        
-        // Compact 3-column layout changes
         card.innerHTML = `
-            <div class="h-28 sm:h-48 relative overflow-hidden bg-stone-200">
-                <img src="${imgUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="absolute top-1 right-1 sm:top-3 sm:left-3 sm:right-auto bg-white/95 backdrop-blur px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded sm:rounded-lg text-[9px] sm:text-[10px] font-bold text-brand-700 shadow-sm flex items-center gap-1">
-                    <i class="fa-solid fa-location-dot hidden sm:inline"></i> ${p.province}
-                </div>
-                <button onclick="toggleFavorite(event, ${p.id})" class="absolute top-1 left-1 sm:top-3 sm:right-3 sm:left-auto w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white backdrop-blur flex items-center justify-center shadow-sm transition-all z-10 ${isFav ? 'text-red-500' : 'text-stone-400 hover:text-red-400'}">
-                    <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
-                </button>
-                <div class="absolute bottom-1 left-1 sm:bottom-3 sm:left-3 text-white font-bold text-xs sm:text-lg drop-shadow-md sm:transform sm:translate-y-4 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 transition-all duration-300 bg-black/30 sm:bg-transparent px-1 sm:px-0 rounded">
-                    ฿${formatPriceCompact(p.price)}
-                </div>
+            <div class="h-32 sm:h-40 relative bg-stone-200">
+                <img src="${imgUrl}" class="w-full h-full object-cover">
+                <div class="absolute top-1 right-1 bg-white/90 backdrop-blur px-1.5 py-0.5 rounded text-[9px] font-bold text-brand-700"><i class="fa-solid fa-location-dot"></i> ${p.province}</div>
+                <button onclick="toggleFavorite(event, ${p.id})" class="absolute top-1 left-1 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center ${isFav?'text-red-500':'text-stone-400'}"><i class="${isFav?'fa-solid':'fa-regular'} fa-heart"></i></button>
+                <div class="absolute bottom-1 left-1 bg-black/40 text-white text-xs font-bold px-1 rounded">฿${formatPriceCompact(p.price)}</div>
             </div>
-            <div class="p-2 sm:p-4 flex flex-col flex-grow">
-                <h3 class="font-bold text-stone-800 text-[10px] sm:text-sm line-clamp-2 mb-1 sm:mb-2 leading-tight h-8 sm:h-10 group-hover:text-brand-600 transition-colors">${p.title}</h3>
-                <div class="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-[11px] text-stone-500 mb-1 sm:mb-3">
-                     <i class="fa-regular fa-map text-stone-300"></i> <span class="truncate max-w-[100px] sm:max-w-[150px]">${p.address || p.province}</span>
-                </div>
-                <div class="mt-auto border-t border-stone-100 pt-1 sm:pt-3 flex justify-between items-center">
-                    <span class="text-brand-600 font-bold text-xs sm:text-lg hidden sm:block">฿${formatPriceCompact(p.price)}</span>
-                    <span class="text-[9px] sm:text-[10px] text-stone-400 font-medium">ดู<span class="hidden sm:inline">รายละเอียด</span> <i class="fa-solid fa-arrow-right ml-0.5 sm:ml-1"></i></span>
+            <div class="p-2 flex flex-col flex-grow">
+                <h3 class="font-bold text-stone-800 text-xs line-clamp-2 mb-1 leading-tight">${p.title}</h3>
+                <div class="mt-auto flex justify-between items-center pt-1 border-t border-stone-50">
+                     <span class="text-[9px] text-stone-400">${p.address || p.province}</span>
+                     <span class="text-[9px] text-brand-600 font-bold">ดูรายละเอียด</span>
                 </div>
             </div>
         `;
         dom.board.appendChild(card);
     });
-    
     updatePagination();
 }
 
@@ -826,17 +926,13 @@ function changePage(delta) {
 
 function debounce(func, wait) {
     let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
+    return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), wait); };
 }
 
-// --- MAP FUNCTIONS ---
+// --- MAP & SLIDER ---
 function initMap() {
     map = L.map('map', {zoomControl: false}).setView([13.7563, 100.5018], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '' }).addTo(map);
-    L.control.zoom({position: 'bottomright'}).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     map.on('click', e => updateMarker(e.latlng.lat, e.latlng.lng));
 }
 
@@ -853,494 +949,102 @@ function updateMarker(lat, lng) {
 function updateFormCoords(lat, lng) {
     dom.lat.value = lat; dom.lng.value = lng;
     dom.latlng_display.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    dom.latlng_display.className = "text-[10px] font-mono bg-brand-50 text-brand-700 px-2 py-1 rounded border border-brand-100 font-bold";
 }
 
 async function searchLocation() {
     const query = document.getElementById('mapSearchInput').value;
     if (!query) return;
-    
-    const btn = document.querySelector('button[onclick="searchLocation()"]');
-    const originalContent = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-    
     try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
         const data = await res.json();
         if (data && data.length > 0) {
-            const lat = parseFloat(data[0].lat);
-            const lon = parseFloat(data[0].lon);
-            updateMarker(lat, lon);
-            map.setView([lat, lon], 13);
-        } else {
-            Swal.fire({icon: 'warning', title: 'ไม่พบสถานที่', toast: true, position: 'top', showConfirmButton: false, timer: 2000});
+            updateMarker(parseFloat(data[0].lat), parseFloat(data[0].lon));
+            map.setView([parseFloat(data[0].lat), parseFloat(data[0].lon)], 13);
         }
-    } catch (e) {
-        console.error(e);
-    } finally {
-        btn.innerHTML = originalContent;
-    }
+    } catch (e) { console.error(e); }
 }
 
-// --- MODAL FUNCTIONS ---
-function openNewPostModal() {
-    resetForm();
-    dom.dlg.showModal();
-    document.body.classList.add('overflow-hidden'); // Lock scroll
-    setTimeout(() => map.invalidateSize(), 300);
-}
-
-function closeModal() {
-    dom.dlg.close();
-    document.body.classList.remove('overflow-hidden'); // Unlock scroll
-    resetForm();
-}
+function openNewPostModal() { resetForm(); dom.dlg.showModal(); document.body.classList.add('overflow-hidden'); setTimeout(()=>map.invalidateSize(),300); }
+function closeModal() { dom.dlg.close(); document.body.classList.remove('overflow-hidden'); resetForm(); }
 
 function resetForm() {
-    dom.postId.value = '';
-    dom.title.value = '';
-    dom.price.value = '';
-    dom.contactName.value = '';
-    dom.phone.value = '';
-    dom.lineId.value = '';
-    dom.address.value = '';
-    dom.body.value = '';
-    dom.province.value = '';
-    dom.imgInput.value = '';
-    dom.lat.value = '';
-    dom.lng.value = '';
-    dom.latlng_display.textContent = 'ยังไม่ระบุพิกัด';
-    dom.latlng_display.className = "text-[10px] font-mono bg-white px-2 py-1 rounded border border-stone-100 text-stone-400";
-    
-    formImages = [];
-    dom.previewList.innerHTML = '';
-    dom.imgCount.textContent = '0/3';
-    
-    if (marker) {
-        map.removeLayer(marker);
-        marker = null;
-    }
-    map.setView([13.7563, 100.5018], 6);
-    document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+    dom.postId.value=''; dom.title.value=''; dom.price.value=''; dom.contactName.value='';
+    dom.phone.value=''; dom.lineId.value=''; dom.address.value=''; dom.body.value='';
+    dom.province.value=''; dom.imgInput.value=''; dom.lat.value=''; dom.lng.value='';
+    dom.latlng_display.textContent='ยังไม่ระบุพิกัด'; formImages=[]; dom.previewList.innerHTML=''; dom.imgCount.textContent='0/3';
+    if(marker){ map.removeLayer(marker); marker=null; } map.setView([13.7563, 100.5018], 6);
 }
 
-// --- COPY TO CLIPBOARD ---
-function copyToClipboard(text, label) {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.style.position = "fixed"; // Prevent scrolling to bottom
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-    
-    try {
-        document.execCommand('copy');
-        Swal.fire({
-            icon: 'success',
-            title: 'คัดลอกแล้ว',
-            text: `คัดลอก ${label} เรียบร้อย`,
-            toast: true,
-            position: 'top',
-            showConfirmButton: false,
-            timer: 1500,
-            customClass: { popup: 'rounded-xl shadow-lg border border-stone-100' }
-        });
-    } catch (err) {
-        console.error('Fallback: Oops, unable to copy', err);
-        Swal.fire('Error', 'ไม่สามารถคัดลอกได้', 'error');
-    }
-    
-    document.body.removeChild(textarea);
-}
-
-// --- VIEW DETAILS FUNCTIONS ---
-function viewPost(id) {
-    const post = posts.find(p => p.id === id);
-    if (!post) return;
-    
-    dom.viewTitle.textContent = post.title;
-    dom.viewPriceHeader.textContent = '฿' + parseInt(post.price).toLocaleString();
-    dom.viewContact.textContent = post.contact_name || '-';
-    dom.viewLocation.textContent = (post.address ? post.address + ' ' : '') + post.province;
-    dom.viewBody.textContent = post.body || '-';
-    
-    // Actions logic
-    let hasPhone = !!post.phone && String(post.phone).trim() !== '';
-    let hasLine = !!post.line_id && String(post.line_id).trim() !== '';
-    
-    const contactContainer = document.getElementById('viewContactActions');
-    contactContainer.innerHTML = ''; // Clear previous content
-    
-    if (hasPhone || hasLine) {
-        contactContainer.classList.remove('hidden');
-        contactContainer.className = "flex flex-col gap-3 mb-6"; // Ensure vertical stack for cards
-        
-        let html = '';
-
-        // Line Card (Copy)
-        if (hasLine) {
-            const cleanLine = String(post.line_id).trim();
-            
-            html += `
-            <div onclick="copyToClipboard('${cleanLine}', 'Line ID')" class="flex items-center p-4 bg-[#06C755]/10 rounded-2xl hover:bg-[#06C755]/20 transition-colors border border-[#06C755]/20 group cursor-pointer select-none">
-                <div class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-md">
-                    <i class="fa-brands fa-line text-xl"></i>
-                </div>
-                <div class="ml-4 flex-1">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[10px] text-[#06C755] font-bold uppercase tracking-wide">Line ID</p>
-                        <span class="text-[10px] bg-white text-[#06C755] px-2 py-0.5 rounded-full shadow-sm border border-[#06C755]/20"><i class="fa-regular fa-copy mr-1"></i>คัดลอก</span>
-                    </div>
-                    <p class="text-stone-800 font-bold text-lg group-hover:text-[#06C755] mt-0.5">${cleanLine}</p>
-                </div>
-            </div>`;
-        }
-
-        // Phone Card (Copy)
-        if (hasPhone) {
-            const phoneText = String(post.phone);
-            html += `
-            <div onclick="copyToClipboard('${phoneText}', 'เบอร์โทรศัพท์')" class="flex items-center p-4 bg-blue-50 rounded-2xl hover:bg-blue-100 transition-colors border border-blue-200 group cursor-pointer select-none">
-                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-md">
-                    <i class="fa-solid fa-phone text-lg"></i>
-                </div>
-                <div class="ml-4 flex-1">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[10px] text-blue-500 font-bold uppercase tracking-wide">เบอร์โทรศัพท์</p>
-                        <span class="text-[10px] bg-white text-blue-500 px-2 py-0.5 rounded-full shadow-sm border border-blue-200"><i class="fa-regular fa-copy mr-1"></i>คัดลอก</span>
-                    </div>
-                    <p class="text-stone-800 font-bold text-lg group-hover:text-blue-700 mt-0.5">${phoneText}</p>
-                </div>
-            </div>`;
-        }
-        
-        contactContainer.innerHTML = html;
-
-    } else {
-        contactContainer.classList.add('hidden');
-    }
-    
-    // Images
-    dom.viewImages.innerHTML = '';
-    sliderImages = post.images && post.images.length ? post.images : [];
-    
-    if (sliderImages.length > 0) {
-        dom.viewMainImage.src = sliderImages[0];
-        
-        sliderImages.forEach((url, idx) => {
-            const img = document.createElement('img');
-            img.src = url;
-            img.className = "h-16 w-24 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-brand-500 transition-all";
-            img.onclick = () => {
-                dom.viewMainImage.src = url;
-            };
-            dom.viewImages.appendChild(img);
-        });
-        
-        // Add click listener to main image header to open slider
-        dom.viewImageHeader.onclick = () => openImageSlider(0);
-        
-    } else {
-        dom.viewMainImage.src = 'https://placehold.co/600x400?text=No+Image';
-        dom.viewImages.innerHTML = '<span class="text-xs text-stone-400">ไม่มีรูปภาพเพิ่มเติม</span>';
-    }
-    
-    // Map in View
-    if (post.lat && post.lng) {
-        dom.viewMapContainer.classList.remove('hidden');
-        if (!viewMap) {
-            viewMap = L.map('viewMap', {zoomControl: false});
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '' }).addTo(viewMap);
-        }
-        
-        setTimeout(() => {
-            viewMap.invalidateSize();
-            viewMap.setView([post.lat, post.lng], 13);
-            if (viewMarker) viewMap.removeLayer(viewMarker);
-            viewMarker = L.marker([post.lat, post.lng]).addTo(viewMap);
-        }, 200);
-        
-        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${post.lat},${post.lng}`;
-        
-        // Use click handler instead of href/target
-        const mapLink = document.getElementById('viewMapLink');
-        // Clear href so it doesn't navigate on its own
-        mapLink.removeAttribute('href');
-        mapLink.style.cursor = 'pointer'; 
-        mapLink.onclick = (e) => {
-            e.preventDefault();
-            openExternal(mapUrl);
-        };
-
-    } else {
-        dom.viewMapContainer.classList.add('hidden');
-    }
-    
-    dom.viewDeleteBtn.onclick = () => deletePost(post.id);
-    dom.viewDlg.showModal();
-    document.body.classList.add('overflow-hidden'); // Lock scroll
-}
-
-function closeViewModal() {
-    dom.viewDlg.close();
-    document.body.classList.remove('overflow-hidden'); // Unlock scroll
-    reopenViewOnSliderClose = false;
-}
-
-// --- IMAGE SLIDER ---
 function openImageSlider(index) {
-    if (sliderImages.length === 0) return;
-    sliderIndex = index;
-    updateSliderImage();
-    
-    if (dom.viewDlg.open) {
-        reopenViewOnSliderClose = true; // Set BEFORE closing
-        dom.viewDlg.close();
-    }
-    
+    if(sliderImages.length===0) return;
+    sliderIndex = index; updateSliderImage();
+    if(dom.viewDlg.open) { reopenViewOnSliderClose=true; dom.viewDlg.close(); }
     dom.slider.classList.remove('hidden');
-    setTimeout(() => {
-        dom.slider.classList.remove('slider-hidden');
-        dom.slider.classList.add('slider-visible');
-    }, 10);
+    setTimeout(() => { dom.slider.classList.remove('slider-hidden'); dom.slider.classList.add('slider-visible'); }, 10);
 }
 
 function closeImageSlider() {
-    dom.slider.classList.remove('slider-visible');
-    dom.slider.classList.add('slider-hidden');
-    setTimeout(() => {
-        dom.slider.classList.add('hidden');
-        if (reopenViewOnSliderClose) {
-            dom.viewDlg.showModal();
-            // document.body.classList.add('overflow-hidden'); // Already locked
-            reopenViewOnSliderClose = false;
-        }
-    }, 300);
+    dom.slider.classList.remove('slider-visible'); dom.slider.classList.add('slider-hidden');
+    setTimeout(() => { dom.slider.classList.add('hidden'); if(reopenViewOnSliderClose){ dom.viewDlg.showModal(); reopenViewOnSliderClose=false; } }, 300);
 }
+function changeSlide(s) { if(sliderImages.length===0)return; sliderIndex=(sliderIndex+s+sliderImages.length)%sliderImages.length; updateSliderImage(); }
+function updateSliderImage() { dom.sliderImg.src=sliderImages[sliderIndex]; dom.sliderCounter.textContent=`${sliderIndex+1}/${sliderImages.length}`; }
 
-function changeSlide(step) {
-    if (sliderImages.length === 0) return;
-    sliderIndex = (sliderIndex + step + sliderImages.length) % sliderImages.length;
-    updateSliderImage();
-}
-
-function updateSliderImage() {
-    dom.sliderImg.src = sliderImages[sliderIndex];
-    dom.sliderCounter.textContent = `${sliderIndex + 1} / ${sliderImages.length}`;
-}
-
-// --- IMAGE UPLOAD LOGIC ---
 function appendImages(input) {
-    if (input.files) {
-        const remaining = 3 - formImages.length;
-        const filesToProcess = Array.from(input.files).slice(0, remaining);
-        
-        filesToProcess.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                formImages.push(e.target.result);
-                renderFormImages();
-            };
-            reader.readAsDataURL(file);
+    if(input.files){
+        const rem = 3 - formImages.length;
+        Array.from(input.files).slice(0, rem).forEach(f => {
+            const r = new FileReader();
+            r.onload = e => { formImages.push(e.target.result); renderFormImages(); };
+            r.readAsDataURL(f);
         });
     }
 }
-
 function renderFormImages() {
     dom.previewList.innerHTML = '';
     formImages.forEach((src, idx) => {
         const div = document.createElement('div');
-        div.className = "relative aspect-square rounded-2xl overflow-hidden group shadow-sm border border-stone-200";
-        div.innerHTML = `
-            <img src="${src}" class="w-full h-full object-cover">
-            <button onclick="removeImage(${idx})" class="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center transition-all"><i class="fa-solid fa-times"></i></button>
-        `;
+        div.className = "relative aspect-square rounded-xl overflow-hidden shadow-sm border border-stone-200";
+        div.innerHTML = `<img src="${src}" class="w-full h-full object-cover"><button onclick="removeImage(${idx})" class="absolute top-1 right-1 bg-red-500 text-white w-5 h-5 rounded-full text-xs flex items-center justify-center"><i class="fa-solid fa-times"></i></button>`;
         dom.previewList.appendChild(div);
     });
-    
     dom.imgCount.textContent = `${formImages.length}/3`;
-    if (formImages.length >= 3) dom.uploadBtn.classList.add('hidden');
-    else dom.uploadBtn.classList.remove('hidden');
 }
-
-function removeImage(idx) {
-    formImages.splice(idx, 1);
-    renderFormImages();
-}
-
-// --- SAVE / DELETE ---
-function validateForm() {
-    let isValid = true;
-    if (!dom.title.value.trim()) { dom.title.classList.add('input-error'); isValid = false; }
-    if (!dom.price.value) { dom.price.classList.add('input-error'); isValid = false; }
-    if (!dom.province.value) { dom.province.classList.add('input-error'); isValid = false; }
-    return isValid;
-}
+function removeImage(idx) { formImages.splice(idx, 1); renderFormImages(); }
+function validateForm() { return dom.title.value.trim() && dom.price.value && dom.province.value; }
 
 async function savePost() {
-    if (!validateForm()) {
-        setTimeout(() => document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error')), 500);
-        return;
-    }
-
-    const btn = document.getElementById('btnSave');
-    const txt = document.getElementById('btnSaveText');
-    const icon = document.getElementById('btnSaveIcon');
-    
-    const originalText = txt.textContent;
-    const originalIconClass = icon.className;
-    
-    txt.textContent = 'กำลังบันทึก...';
-    icon.className = 'fa-solid fa-circle-notch fa-spin';
-    btn.disabled = true;
-
-    const formData = new FormData();
-    formData.append('action', 'create');
-    formData.append('title', dom.title.value);
-    formData.append('price', dom.price.value);
-    formData.append('province', dom.province.value);
-    formData.append('address', dom.address.value);
-    formData.append('contact_name', dom.contactName.value);
-    formData.append('phone', dom.phone.value);
-    formData.append('line_id', dom.lineId.value);
-    formData.append('body', dom.body.value);
-    formData.append('lat', dom.lat.value);
-    formData.append('lng', dom.lng.value);
-    formData.append('images', JSON.stringify(formImages));
-
+    if(!validateForm()) return;
+    const btn = document.getElementById('btnSave'); btn.disabled=true;
+    const fd = new FormData();
+    fd.append('action','create'); fd.append('title',dom.title.value); fd.append('price',dom.price.value);
+    fd.append('province',dom.province.value); fd.append('address',dom.address.value);
+    fd.append('contact_name',dom.contactName.value); fd.append('phone',dom.phone.value);
+    fd.append('line_id',dom.lineId.value); fd.append('body',dom.body.value);
+    fd.append('lat',dom.lat.value); fd.append('lng',dom.lng.value);
+    fd.append('images',JSON.stringify(formImages));
     try {
-        await fetch(API_URL, { method: 'POST', body: formData });
-        
-        // Optimistic Update
-        const newPost = {
-            id: Date.now(), 
-            title: dom.title.value,
-            price: Number(dom.price.value),
-            province: dom.province.value,
-            address: dom.address.value,
-            contact_name: dom.contactName.value,
-            phone: dom.phone.value,
-            line_id: dom.lineId.value,
-            body: dom.body.value,
-            lat: dom.lat.value ? parseFloat(dom.lat.value) : null,
-            lng: dom.lng.value ? parseFloat(dom.lng.value) : null,
-            images: formImages
-        };
-
-        posts.unshift(newPost);
-        applyFilters();
-
-        Swal.fire({
-            icon: 'success',
-            title: 'ลงประกาศสำเร็จ!',
-            text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อยแล้ว',
-            timer: 2000,
-            showConfirmButton: false,
-            confirmButtonColor: '#10b981'
-        });
-        
-        closeModal();
-
-    } catch (e) {
-        console.error(e);
-        Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
-    } finally {
-        txt.textContent = originalText;
-        icon.className = originalIconClass;
-        btn.disabled = false;
-    }
+        await fetch(API_URL, {method:'POST', body:fd});
+        const np = {id:Date.now(), title:dom.title.value, price:Number(dom.price.value), province:dom.province.value, address:dom.address.value, contact_name:dom.contactName.value, phone:String(dom.phone.value), line_id:String(dom.lineId.value), body:dom.body.value, lat:dom.lat.value, lng:dom.lng.value, images:formImages};
+        posts.unshift(np); applyFilters();
+        Swal.fire({icon:'success', title:'สำเร็จ', timer:1500, showConfirmButton:false}); closeModal();
+    } catch(e) { Swal.fire('Error', 'ผิดพลาด', 'error'); } 
+    finally { btn.disabled=false; }
 }
 
 function deletePost(id) {
     closeViewModal();
-    
-    Swal.fire({
-        title: 'ยืนยันการลบ?',
-        text: "คุณต้องการลบประกาศนี้ใช่หรือไม่",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#e5e7eb',
-        cancelButtonText: '<span class="text-gray-600">ยกเลิก</span>',
-        confirmButtonText: 'ลบประกาศ',
-        reverseButtons: true,
-        showLoaderOnConfirm: true,
-        preConfirm: async () => {
-             try {
-                 const fd = new FormData();
-                 fd.append('action', 'delete');
-                 fd.append('id', id);
-                 const res = await fetch(API_URL, { method: 'POST', body: fd });
-                 if (!res.ok) throw new Error();
-                 return true;
-             } catch (error) {
-                 Swal.showValidationMessage(`เกิดข้อผิดพลาด`);
-             }
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            posts = posts.filter(p => p.id !== id);
-            applyFilters();
-            Swal.fire({
-                title: 'ลบสำเร็จ', 
-                icon: 'success', 
-                timer: 1500, 
-                showConfirmButton: false
-            });
+    Swal.fire({title:'ยืนยันลบ?', icon:'warning', showCancelButton:true, confirmButtonText:'ลบ', cancelButtonText:'ยกเลิก'}).then(async (r) => {
+        if(r.isConfirmed){
+            const fd = new FormData(); fd.append('action','delete'); fd.append('id',id);
+            try { await fetch(API_URL,{method:'POST', body:fd}); posts=posts.filter(p=>p.id!==id); applyFilters(); Swal.fire('ลบแล้ว','','success'); } catch(e){}
         }
     });
 }
+function fillDemoData() { dom.title.value="ที่ดินสวย 10 ไร่"; dom.price.value="500000"; dom.province.value="เชียงใหม่"; dom.address.value="แม่ริม"; dom.contactName.value="สมชาย"; dom.phone.value="0812345678"; dom.lineId.value="somchai99"; dom.body.value="ที่สวย วิวดี"; updateMarker(18.9, 98.9); }
 
-function fillDemoData() {
-    dom.title.value = "ที่ดินสวย 10 ไร่ ติดถนนใหญ่ เหมาะทำโรงงาน";
-    dom.price.value = "12500000";
-    dom.province.value = "ปทุมธานี";
-    dom.address.value = "อ.คลองหลวง";
-    dom.contactName.value = "คุณเจ้าของที่";
-    dom.phone.value = "081-123-4567";
-    dom.lineId.value = "land_owner99";
-    dom.body.value = "ขายที่ดิน 10 ไร่ 2 งาน \n- ถมแล้วเต็มพื้นที่\n- ไฟฟ้า 3 เฟส\n- ติดถนนลาดยาง 4 เลน\n- ใกล้ทางด่วน";
-    
-    const lat = 14.0600 + (Math.random() * 0.05);
-    const lng = 100.6000 + (Math.random() * 0.05);
-    updateMarker(lat, lng);
-    
-    formImages = ["https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"];
-    renderFormImages();
-}
-
-// ===== WebView Safe Link (No target=_blank) =====
-function openExternal(url) {
-    try {
-        // Use location instead of window.open (more stable in WebView)
-        window.location.href = url;
-    } catch (e) {
-        console.log("Open link error", e);
-    }
-}
-
-// Global interceptor
-document.addEventListener("click", function (e) {
-    const link = e.target.closest("a");
-    if (!link) return;
-
-    // Skip if it is an internal anchor or javascript:void
-    if (link.href.startsWith("javascript:") || link.getAttribute('href') === '#') return;
-
-    const isExternal = link.hostname && link.hostname !== location.hostname;
-    // Also handle tel: and mailto: which might have empty hostname
-    const isProtocol = link.href.startsWith('tel:') || link.href.startsWith('mailto:') || link.href.startsWith('line:') || link.href.startsWith('intent:');
-
-    if (isExternal || isProtocol) {
-        e.preventDefault();
-        openExternal(link.href);
-    }
-});
-
-// Start App
-document.addEventListener("DOMContentLoaded", function () {
-    init();
-});
+// Boot
+document.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
 </html>

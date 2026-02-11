@@ -299,17 +299,8 @@
                 <button id="btnDeletePost" class="text-stone-300 hover:text-red-500 transition-colors p-2" title="ลบประกาศ"><i class="fa-solid fa-trash-can"></i></button>
             </div>
 
-            <!-- Contact Buttons Grid -->
-            <div id="viewContactActions" class="grid grid-cols-2 gap-3 mb-6 hidden">
-                <!-- Phone Button with target="_top" -->
-                <a id="viewPhoneLink" href="#" target="_top" rel="noopener noreferrer" class="flex items-center justify-center gap-2 py-2.5 bg-emerald-500 text-white rounded-xl shadow-md hover:bg-emerald-600 transition-colors active:scale-95 text-sm font-bold">
-                    <i class="fa-solid fa-phone"></i> โทรออก
-                </a>
-                <!-- Line Button with target="_top" -->
-                <a id="viewLineLink" href="#" target="_top" rel="noopener noreferrer" class="flex items-center justify-center gap-2 py-2.5 bg-[#06C755] text-white rounded-xl shadow-md hover:bg-[#05b34c] transition-colors active:scale-95 text-sm font-bold">
-                    <i class="fa-brands fa-line text-lg"></i> แอดไลน์
-                </a>
-            </div>
+            <!-- Contact Buttons Grid (Will be populated by JS) -->
+            <div id="viewContactActions" class="flex flex-col gap-3 mb-6 hidden"></div>
 
             <!-- Key Info Grid -->
             <div class="grid grid-cols-2 gap-3 mb-6">
@@ -947,32 +938,54 @@ function viewPost(id) {
     let hasPhone = !!post.phone && String(post.phone).trim() !== '';
     let hasLine = !!post.line_id && String(post.line_id).trim() !== '';
     
+    const contactContainer = document.getElementById('viewContactActions');
+    contactContainer.innerHTML = ''; // Clear previous content
+    
     if (hasPhone || hasLine) {
-        dom.viewContactActions.classList.remove('hidden');
+        contactContainer.classList.remove('hidden');
+        contactContainer.className = "flex flex-col gap-3 mb-6"; // Ensure vertical stack for cards
         
-        // Phone
-        if (hasPhone) {
-            // Clean phone number: remove dashes, spaces, keep only digits and +
-            const cleanPhone = String(post.phone).replace(/[^0-9+]/g, '');
-            dom.viewPhoneLink.href = `tel:${cleanPhone}`;
-            dom.viewPhoneLink.target = "_top"; // Try _top for iframe breakout
-            dom.viewPhoneLink.classList.remove('hidden');
-        } else {
-            dom.viewPhoneLink.classList.add('hidden');
-        }
-        
-        // Line
+        let html = '';
+
+        // Line Card
         if (hasLine) {
-            // Ensure pure ID and construct safe URL
             const cleanLine = String(post.line_id).trim();
-            dom.viewLineLink.href = `https://line.me/ti/p/~${cleanLine}`;
-            dom.viewLineLink.target = "_top"; // Ensure target
-            dom.viewLineLink.classList.remove('hidden');
-        } else {
-            dom.viewLineLink.classList.add('hidden');
+            const lineUrl = `https://line.me/ti/p/~${cleanLine}`;
+            
+            html += `
+            <a href="${lineUrl}" target="_blank" class="flex items-center p-4 bg-[#06C755]/10 rounded-2xl hover:bg-[#06C755]/20 transition-colors border border-[#06C755]/20 group cursor-pointer text-decoration-none">
+                <div class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-md">
+                    <i class="fa-brands fa-line text-xl"></i>
+                </div>
+                <div class="ml-4 flex-1">
+                    <div class="flex items-center justify-between">
+                        <p class="text-[10px] text-[#06C755] font-bold uppercase tracking-wide">Line ID</p>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[12px] text-[#06C755]"></i>
+                    </div>
+                    <p class="text-stone-800 font-bold text-lg group-hover:text-[#06C755]">@${cleanLine}</p>
+                </div>
+            </a>`;
         }
+
+        // Phone Card
+        if (hasPhone) {
+            const cleanPhone = String(post.phone).replace(/[^0-9+]/g, '');
+            html += `
+            <a href="tel:${cleanPhone}" target="_blank" class="flex items-center p-4 bg-blue-50 rounded-2xl hover:bg-blue-100 transition-colors border border-blue-200 group cursor-pointer text-decoration-none">
+                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-md">
+                    <i class="fa-solid fa-phone text-lg"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-[10px] text-blue-500 font-bold uppercase tracking-wide">เบอร์โทรศัพท์</p>
+                    <p class="text-stone-800 font-bold text-lg group-hover:text-blue-700">${post.phone}</p>
+                </div>
+            </a>`;
+        }
+        
+        contactContainer.innerHTML = html;
+
     } else {
-        dom.viewContactActions.classList.add('hidden');
+        contactContainer.classList.add('hidden');
     }
     
     // Images

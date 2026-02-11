@@ -301,10 +301,12 @@
 
             <!-- Contact Buttons Grid -->
             <div id="viewContactActions" class="grid grid-cols-2 gap-3 mb-6 hidden">
-                <a id="viewPhoneLink" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 py-2.5 bg-emerald-500 text-white rounded-xl shadow-md hover:bg-emerald-600 transition-colors active:scale-95 text-sm font-bold">
+                <!-- Phone Button with target="_top" -->
+                <a id="viewPhoneLink" href="#" target="_top" rel="noopener noreferrer" class="flex items-center justify-center gap-2 py-2.5 bg-emerald-500 text-white rounded-xl shadow-md hover:bg-emerald-600 transition-colors active:scale-95 text-sm font-bold">
                     <i class="fa-solid fa-phone"></i> โทรออก
                 </a>
-                <a id="viewLineLink" href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 py-2.5 bg-[#06C755] text-white rounded-xl shadow-md hover:bg-[#05b34c] transition-colors active:scale-95 text-sm font-bold">
+                <!-- Line Button with target="_top" -->
+                <a id="viewLineLink" href="#" target="_top" rel="noopener noreferrer" class="flex items-center justify-center gap-2 py-2.5 bg-[#06C755] text-white rounded-xl shadow-md hover:bg-[#05b34c] transition-colors active:scale-95 text-sm font-bold">
                     <i class="fa-brands fa-line text-lg"></i> แอดไลน์
                 </a>
             </div>
@@ -964,7 +966,7 @@ function viewPost(id) {
             // Ensure pure ID and construct safe URL
             const cleanLine = String(post.line_id).trim();
             dom.viewLineLink.href = `https://line.me/ti/p/~${cleanLine}`;
-            dom.viewLineLink.target = "_blank"; // Ensure target
+            dom.viewLineLink.target = "_top"; // Ensure target
             dom.viewLineLink.classList.remove('hidden');
         } else {
             dom.viewLineLink.classList.add('hidden');

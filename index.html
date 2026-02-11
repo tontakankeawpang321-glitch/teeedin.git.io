@@ -52,7 +52,7 @@
     ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #059669; }
     
-    /* Dialog Animation - Updated per request */
+    /* Dialog Animation */
     dialog {
         transition: opacity 0.3s ease, transform 0.3s ease;
         opacity: 0;
@@ -942,8 +942,8 @@ function viewPost(id) {
     dom.viewBody.textContent = post.body || '-';
     
     // Actions logic
-    let hasPhone = !!post.phone;
-    let hasLine = !!post.line_id;
+    let hasPhone = !!post.phone && String(post.phone).trim() !== '';
+    let hasLine = !!post.line_id && String(post.line_id).trim() !== '';
     
     if (hasPhone || hasLine) {
         dom.viewContactActions.classList.remove('hidden');
@@ -953,6 +953,7 @@ function viewPost(id) {
             // Clean phone number: remove dashes, spaces, keep only digits and +
             const cleanPhone = String(post.phone).replace(/[^0-9+]/g, '');
             dom.viewPhoneLink.href = `tel:${cleanPhone}`;
+            dom.viewPhoneLink.target = "_top"; // Try _top for iframe breakout
             dom.viewPhoneLink.classList.remove('hidden');
         } else {
             dom.viewPhoneLink.classList.add('hidden');
@@ -963,6 +964,7 @@ function viewPost(id) {
             // Ensure pure ID and construct safe URL
             const cleanLine = String(post.line_id).trim();
             dom.viewLineLink.href = `https://line.me/ti/p/~${cleanLine}`;
+            dom.viewLineLink.target = "_blank"; // Ensure target
             dom.viewLineLink.classList.remove('hidden');
         } else {
             dom.viewLineLink.classList.add('hidden');

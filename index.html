@@ -52,7 +52,7 @@
     ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #059669; }
     
-    /* Dialog Animation */
+    /* Dialog Animation - Updated per request */
     dialog {
         transition: opacity 0.3s ease, transform 0.3s ease;
         opacity: 0;
@@ -331,7 +331,8 @@
             <div id="viewMapContainer" class="hidden rounded-2xl overflow-hidden border border-stone-200">
                 <div class="bg-stone-100 px-4 py-2 border-b border-stone-200 flex justify-between items-center">
                     <h4 class="text-xs font-bold text-stone-700"><i class="fa-solid fa-map-location text-brand-500 mr-1"></i> แผนที่</h4>
-                    <a id="viewMapLink" href="#" target="_blank" class="text-[10px] text-brand-600 hover:underline"><i class="fa-solid fa-external-link-alt"></i> เปิด Google Maps</a>
+                    <!-- REMOVED target="_blank" -->
+                    <a id="viewMapLink" href="#" class="text-[10px] text-brand-600 hover:underline"><i class="fa-solid fa-external-link-alt"></i> เปิด Google Maps</a>
                 </div>
                 <div class="h-64 w-full relative">
                     <div id="viewMap" class="h-full w-full"></div>
@@ -953,7 +954,7 @@ function viewPost(id) {
             const lineUrl = `https://line.me/ti/p/~${cleanLine}`;
             
             html += `
-            <a href="${lineUrl}" target="_blank" class="flex items-center p-4 bg-[#06C755]/10 rounded-2xl hover:bg-[#06C755]/20 transition-colors border border-[#06C755]/20 group cursor-pointer text-decoration-none">
+            <div onclick="openExternal('${lineUrl}')" class="flex items-center p-4 bg-[#06C755]/10 rounded-2xl hover:bg-[#06C755]/20 transition-colors border border-[#06C755]/20 group cursor-pointer">
                 <div class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-md">
                     <i class="fa-brands fa-line text-xl"></i>
                 </div>
@@ -964,14 +965,14 @@ function viewPost(id) {
                     </div>
                     <p class="text-stone-800 font-bold text-lg group-hover:text-[#06C755]">@${cleanLine}</p>
                 </div>
-            </a>`;
+            </div>`;
         }
 
         // Phone Card
         if (hasPhone) {
             const cleanPhone = String(post.phone).replace(/[^0-9+]/g, '');
             html += `
-            <a href="tel:${cleanPhone}" target="_blank" class="flex items-center p-4 bg-blue-50 rounded-2xl hover:bg-blue-100 transition-colors border border-blue-200 group cursor-pointer text-decoration-none">
+            <div onclick="openExternal('tel:${cleanPhone}')" class="flex items-center p-4 bg-blue-50 rounded-2xl hover:bg-blue-100 transition-colors border border-blue-200 group cursor-pointer">
                 <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-md">
                     <i class="fa-solid fa-phone text-lg"></i>
                 </div>
@@ -979,7 +980,7 @@ function viewPost(id) {
                     <p class="text-[10px] text-blue-500 font-bold uppercase tracking-wide">เบอร์โทรศัพท์</p>
                     <p class="text-stone-800 font-bold text-lg group-hover:text-blue-700">${post.phone}</p>
                 </div>
-            </a>`;
+            </div>`;
         }
         
         contactContainer.innerHTML = html;
@@ -1029,7 +1030,17 @@ function viewPost(id) {
         }, 200);
         
         const mapUrl = `https://www.google.com/maps/search/?api=1&query=${post.lat},${post.lng}`;
-        document.getElementById('viewMapLink').href = mapUrl;
+        
+        // Use click handler instead of href/target
+        const mapLink = document.getElementById('viewMapLink');
+        // Clear href so it doesn't navigate on its own
+        mapLink.removeAttribute('href');
+        mapLink.style.cursor = 'pointer'; 
+        mapLink.onclick = (e) => {
+            e.preventDefault();
+            openExternal(mapUrl);
+        };
+
     } else {
         dom.viewMapContainer.classList.add('hidden');
     }
@@ -1266,6 +1277,34 @@ function fillDemoData() {
     formImages = ["https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"];
     renderFormImages();
 }
+
+// ===== WebView Safe Link (No target=_blank) =====
+function openExternal(url) {
+    try {
+        // Use location instead of window.open (more stable in WebView)
+        window.location.href = url;
+    } catch (e) {
+        console.log("Open link error", e);
+    }
+}
+
+// Global interceptor
+document.addEventListener("click", function (e) {
+    const link = e.target.closest("a");
+    if (!link) return;
+
+    // Skip if it is an internal anchor or javascript:void
+    if (link.href.startsWith("javascript:") || link.getAttribute('href') === '#') return;
+
+    const isExternal = link.hostname && link.hostname !== location.hostname;
+    // Also handle tel: and mailto: which might have empty hostname
+    const isProtocol = link.href.startsWith('tel:') || link.href.startsWith('mailto:') || link.href.startsWith('line:');
+
+    if (isExternal || isProtocol) {
+        e.preventDefault();
+        openExternal(link.href);
+    }
+});
 
 // Start App
 document.addEventListener("DOMContentLoaded", function () {

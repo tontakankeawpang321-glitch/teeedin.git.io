@@ -924,6 +924,35 @@ function resetForm() {
     document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
 }
 
+// --- COPY TO CLIPBOARD ---
+function copyToClipboard(text, label) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed"; // Prevent scrolling to bottom
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    
+    try {
+        document.execCommand('copy');
+        Swal.fire({
+            icon: 'success',
+            title: 'คัดลอกแล้ว',
+            text: `คัดลอก ${label} เรียบร้อย`,
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            timer: 1500,
+            customClass: { popup: 'rounded-xl shadow-lg border border-stone-100' }
+        });
+    } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err);
+        Swal.fire('Error', 'ไม่สามารถคัดลอกได้', 'error');
+    }
+    
+    document.body.removeChild(textarea);
+}
+
 // --- VIEW DETAILS FUNCTIONS ---
 function viewPost(id) {
     const post = posts.find(p => p.id === id);
@@ -948,38 +977,39 @@ function viewPost(id) {
         
         let html = '';
 
-        // Line Card
+        // Line Card (Copy)
         if (hasLine) {
             const cleanLine = String(post.line_id).trim();
-            // Use intent scheme for Android WebView as requested
-            const lineUrl = `intent://ti/p/~${cleanLine}#Intent;scheme=line;package=jp.naver.line.android;end`;
             
             html += `
-            <div onclick="openExternal('${lineUrl}')" class="flex items-center p-4 bg-[#06C755]/10 rounded-2xl hover:bg-[#06C755]/20 transition-colors border border-[#06C755]/20 group cursor-pointer text-decoration-none">
+            <div onclick="copyToClipboard('${cleanLine}', 'Line ID')" class="flex items-center p-4 bg-[#06C755]/10 rounded-2xl hover:bg-[#06C755]/20 transition-colors border border-[#06C755]/20 group cursor-pointer select-none">
                 <div class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-md">
                     <i class="fa-brands fa-line text-xl"></i>
                 </div>
                 <div class="ml-4 flex-1">
                     <div class="flex items-center justify-between">
                         <p class="text-[10px] text-[#06C755] font-bold uppercase tracking-wide">Line ID</p>
-                        <i class="fa-solid fa-arrow-up-right-from-square text-[12px] text-[#06C755]"></i>
+                        <span class="text-[10px] bg-white text-[#06C755] px-2 py-0.5 rounded-full shadow-sm border border-[#06C755]/20"><i class="fa-regular fa-copy mr-1"></i>คัดลอก</span>
                     </div>
-                    <p class="text-stone-800 font-bold text-lg group-hover:text-[#06C755]">@${cleanLine}</p>
+                    <p class="text-stone-800 font-bold text-lg group-hover:text-[#06C755] mt-0.5">${cleanLine}</p>
                 </div>
             </div>`;
         }
 
-        // Phone Card
+        // Phone Card (Copy)
         if (hasPhone) {
-            const cleanPhone = String(post.phone).replace(/[^0-9+]/g, '');
+            const phoneText = String(post.phone);
             html += `
-            <div onclick="openExternal('tel:${cleanPhone}')" class="flex items-center p-4 bg-blue-50 rounded-2xl hover:bg-blue-100 transition-colors border border-blue-200 group cursor-pointer text-decoration-none">
+            <div onclick="copyToClipboard('${phoneText}', 'เบอร์โทรศัพท์')" class="flex items-center p-4 bg-blue-50 rounded-2xl hover:bg-blue-100 transition-colors border border-blue-200 group cursor-pointer select-none">
                 <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-md">
                     <i class="fa-solid fa-phone text-lg"></i>
                 </div>
-                <div class="ml-4">
-                    <p class="text-[10px] text-blue-500 font-bold uppercase tracking-wide">เบอร์โทรศัพท์</p>
-                    <p class="text-stone-800 font-bold text-lg group-hover:text-blue-700">${post.phone}</p>
+                <div class="ml-4 flex-1">
+                    <div class="flex items-center justify-between">
+                        <p class="text-[10px] text-blue-500 font-bold uppercase tracking-wide">เบอร์โทรศัพท์</p>
+                        <span class="text-[10px] bg-white text-blue-500 px-2 py-0.5 rounded-full shadow-sm border border-blue-200"><i class="fa-regular fa-copy mr-1"></i>คัดลอก</span>
+                    </div>
+                    <p class="text-stone-800 font-bold text-lg group-hover:text-blue-700 mt-0.5">${phoneText}</p>
                 </div>
             </div>`;
         }

@@ -951,10 +951,11 @@ function viewPost(id) {
         // Line Card
         if (hasLine) {
             const cleanLine = String(post.line_id).trim();
-            const lineUrl = `https://line.me/ti/p/~${cleanLine}`;
+            // Use intent scheme for Android WebView as requested
+            const lineUrl = `intent://ti/p/~${cleanLine}#Intent;scheme=line;package=jp.naver.line.android;end`;
             
             html += `
-            <div onclick="openExternal('${lineUrl}')" class="flex items-center p-4 bg-[#06C755]/10 rounded-2xl hover:bg-[#06C755]/20 transition-colors border border-[#06C755]/20 group cursor-pointer">
+            <div onclick="openExternal('${lineUrl}')" class="flex items-center p-4 bg-[#06C755]/10 rounded-2xl hover:bg-[#06C755]/20 transition-colors border border-[#06C755]/20 group cursor-pointer text-decoration-none">
                 <div class="w-10 h-10 bg-[#06C755] rounded-full flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-md">
                     <i class="fa-brands fa-line text-xl"></i>
                 </div>
@@ -972,7 +973,7 @@ function viewPost(id) {
         if (hasPhone) {
             const cleanPhone = String(post.phone).replace(/[^0-9+]/g, '');
             html += `
-            <div onclick="openExternal('tel:${cleanPhone}')" class="flex items-center p-4 bg-blue-50 rounded-2xl hover:bg-blue-100 transition-colors border border-blue-200 group cursor-pointer">
+            <div onclick="openExternal('tel:${cleanPhone}')" class="flex items-center p-4 bg-blue-50 rounded-2xl hover:bg-blue-100 transition-colors border border-blue-200 group cursor-pointer text-decoration-none">
                 <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform shadow-md">
                     <i class="fa-solid fa-phone text-lg"></i>
                 </div>
@@ -1298,7 +1299,7 @@ document.addEventListener("click", function (e) {
 
     const isExternal = link.hostname && link.hostname !== location.hostname;
     // Also handle tel: and mailto: which might have empty hostname
-    const isProtocol = link.href.startsWith('tel:') || link.href.startsWith('mailto:') || link.href.startsWith('line:');
+    const isProtocol = link.href.startsWith('tel:') || link.href.startsWith('mailto:') || link.href.startsWith('line:') || link.href.startsWith('intent:');
 
     if (isExternal || isProtocol) {
         e.preventDefault();

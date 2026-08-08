@@ -1,0 +1,6 @@
+{
+  "name": "LandMarket Online - ศูนย์กลางซื้อขายที่ดิน",
+  "description": "ระบบซื้อขายที่ดินออนไลน์ที่ทันสมัย ค้นหาง่าย ลงประกาศขายฟรี พร้อมระบุพิกัดแผนที่",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
